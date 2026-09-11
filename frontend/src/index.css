@@ -1,0 +1,162 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-main: #09090b;
+    --bg-card: #121215;
+    --border-card: rgba(255, 255, 255, 0.08);
+  }
+
+  body {
+    background-color: #09090b;
+    color: #f4f4f5;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow-x: hidden;
+    letter-spacing: -0.01em;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+}
+
+/* Production-Ready Enterprise Card Styles */
+.app-card {
+  background-color: #121215;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.app-card-interactive {
+  background-color: #121215;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.app-card-interactive:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  background-color: #151518;
+}
+
+/* Leaflet Map Dark Mode */
+.leaflet-layer,
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out,
+.leaflet-control-attribution {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+.leaflet-container {
+  background: #09090b !important;
+}
+
+[data-theme="light"] .leaflet-layer,
+[data-theme="light"] .leaflet-control-zoom-in,
+[data-theme="light"] .leaflet-control-zoom-out,
+[data-theme="light"] .leaflet-control-attribution {
+  filter: none;
+}
+[data-theme="light"] .leaflet-container {
+  background: #e8ecf0 !important;
+}
+
+/* Precision Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #09090b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+/* ── Light theme overrides ─────────────────────────── */
+[data-theme="light"] body {
+  background-color: #f4f4f5;
+  color: #18181b;
+}
+
+[data-theme="light"] :root {
+  --bg-main: #f4f4f5;
+  --bg-card: #ffffff;
+  --border-card: rgba(0, 0, 0, 0.10);
+}
+
+[data-theme="light"] .app-card,
+[data-theme="light"] .app-card-interactive {
+  background-color: #ffffff;
+  border-color: rgba(0, 0, 0, 0.10);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .app-card-interactive:hover {
+  border-color: rgba(0, 0, 0, 0.18);
+  background-color: #fafafa;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #f4f4f5;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #d4d4d8;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #a1a1aa;
+}
+
+/* Remap zinc-950/900/800/700 backgrounds to light equivalents */
+[data-theme="light"] .bg-zinc-950 { background-color: #f4f4f5 !important; }
+[data-theme="light"] .bg-zinc-950\/90 { background-color: rgba(244,244,245,0.95) !important; }
+[data-theme="light"] .bg-zinc-900 { background-color: #ffffff !important; }
+[data-theme="light"] .bg-zinc-900\/50 { background-color: rgba(255,255,255,0.8) !important; }
+[data-theme="light"] .bg-zinc-900\/60 { background-color: rgba(255,255,255,0.85) !important; }
+[data-theme="light"] .bg-zinc-900\/70 { background-color: rgba(255,255,255,0.9) !important; }
+[data-theme="light"] .bg-zinc-900\/80 { background-color: rgba(255,255,255,0.95) !important; }
+[data-theme="light"] .bg-zinc-800 { background-color: #e4e4e7 !important; }
+[data-theme="light"] .bg-zinc-800\/90 { background-color: rgba(228,228,231,0.9) !important; }
+[data-theme="light"] .bg-zinc-800\/80 { background-color: rgba(228,228,231,0.8) !important; }
+[data-theme="light"] .bg-zinc-800\/50 { background-color: rgba(228,228,231,0.5) !important; }
+[data-theme="light"] .bg-zinc-700 { background-color: #d4d4d8 !important; }
+
+/* Remap zinc text to dark equivalents */
+[data-theme="light"] .text-zinc-100 { color: #18181b !important; }
+[data-theme="light"] .text-zinc-200 { color: #27272a !important; }
+[data-theme="light"] .text-zinc-300 { color: #3f3f46 !important; }
+[data-theme="light"] .text-zinc-400 { color: #52525b !important; }
+[data-theme="light"] .text-zinc-500 { color: #71717a !important; }
+
+/* Remap borders */
+[data-theme="light"] .border-zinc-800 { border-color: #e4e4e7 !important; }
+[data-theme="light"] .border-zinc-800\/80 { border-color: rgba(228,228,231,0.8) !important; }
+[data-theme="light"] .border-zinc-800\/60 { border-color: rgba(228,228,231,0.6) !important; }
+[data-theme="light"] .border-zinc-700 { border-color: #d4d4d8 !important; }
+[data-theme="light"] .border-zinc-700\/60 { border-color: rgba(212,212,216,0.6) !important; }
+[data-theme="light"] .border-zinc-600 { border-color: #a1a1aa !important; }
+
+/* Remap hover states */
+[data-theme="light"] .hover\:border-zinc-700:hover { border-color: #a1a1aa !important; }
+[data-theme="light"] .hover\:text-zinc-200:hover { color: #18181b !important; }
+[data-theme="light"] .hover\:bg-zinc-900:hover { background-color: #ffffff !important; }
+[data-theme="light"] .hover\:bg-zinc-900\/70:hover { background-color: rgba(255,255,255,0.85) !important; }
+[data-theme="light"] .hover\:bg-zinc-800:hover { background-color: #e4e4e7 !important; }
+[data-theme="light"] .hover\:bg-zinc-800\/50:hover { background-color: rgba(228,228,231,0.5) !important; }
+[data-theme="light"] .hover\:bg-zinc-800\/40:hover { background-color: rgba(228,228,231,0.4) !important; }
+
+/* Backdrop blur panels */
+[data-theme="light"] .bg-zinc-950\/80 { background-color: rgba(244,244,245,0.85) !important; }
+[data-theme="light"] .bg-zinc-950\/60 { background-color: rgba(244,244,245,0.7) !important; }
+

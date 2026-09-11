@@ -1,0 +1,101 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "leaflet/dist/leaflet.css";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-bg: #08090b;
+  --color-surface: #111318;
+  --color-surface-2: #171a21;
+  --color-border: #252a33;
+  --color-border-strong: #323845;
+
+  --color-ink: #f4f6f8;
+  --color-muted: #8b939e;
+  --color-faint: #5c6570;
+
+  --color-accent: #4aa3e8;
+  --color-accent-2: #3d8fd4;
+  --color-accent-soft: rgba(74, 163, 232, 0.12);
+
+  --color-ok: #3dba7a;
+  --color-ok-soft: rgba(61, 186, 122, 0.12);
+  --color-warn: #d8a23a;
+  --color-warn-soft: rgba(216, 162, 58, 0.12);
+  --color-danger: #e05a4f;
+  --color-danger-soft: rgba(224, 90, 79, 0.12);
+
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+.leaflet-container {
+  background: #0e1116;
+  font-family: var(--font-sans);
+}
+
+.leaflet-layer {
+  filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.95);
+}
+
+.leaflet-control-attribution {
+  background: rgba(8, 9, 11, 0.8) !important;
+  color: #8b939e !important;
+  font-size: 10px !important;
+}
+
+/* ── Light theme overrides ─────────────────────────── */
+[data-theme="light"] {
+  --color-bg: #f5f6f8;
+  --color-surface: #ffffff;
+  --color-surface-2: #eef0f4;
+  --color-border: #dde1e8;
+  --color-border-strong: #c5cbd6;
+
+  --color-ink: #111318;
+  --color-muted: #5c6570;
+  --color-faint: #8b939e;
+
+  --color-accent: #2b7fc7;
+  --color-accent-2: #2570b0;
+  --color-accent-soft: rgba(43, 127, 199, 0.10);
+
+  --color-ok: #1a8f55;
+  --color-ok-soft: rgba(26, 143, 85, 0.10);
+  --color-warn: #b5841e;
+  --color-warn-soft: rgba(181, 132, 30, 0.10);
+  --color-danger: #c4382e;
+  --color-danger-soft: rgba(196, 56, 46, 0.10);
+}
+
+[data-theme="light"] .leaflet-layer {
+  filter: none;
+}
+
+[data-theme="light"] .leaflet-container {
+  background: #e8ecf0;
+}
+
+[data-theme="light"] .leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.85) !important;
+  color: #5c6570 !important;
+}

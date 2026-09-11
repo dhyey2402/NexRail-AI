@@ -32,9 +32,17 @@ export default function ReasoningTimeline({ steps }: ReasoningTimelineProps) {
 
       <div className="p-5">
         <div className="space-y-4">
-          {steps.map((step, i) => (
-            <div key={i} className="relative flex gap-3">
-              {/* Timeline line */}
+          {steps.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-6 border border-zinc-800 border-dashed rounded-xl bg-zinc-900/30">
+              <h4 className="text-zinc-300 font-medium text-xs">Explainability unavailable</h4>
+              <p className="text-zinc-500 text-[10px] max-w-[200px] text-center mt-1">
+                The model did not return reasoning factors for this prediction.
+              </p>
+            </div>
+          ) : (
+            steps.map((step, i) => (
+              <div key={i} className="relative flex gap-3">
+                {/* Timeline line */}
               {i < steps.length - 1 && (
                 <div className="absolute left-[11px] top-6 w-[1px] h-[calc(100%-4px)] bg-zinc-800" />
               )}
@@ -73,7 +81,8 @@ export default function ReasoningTimeline({ steps }: ReasoningTimelineProps) {
                 </div>
               </div>
             </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>

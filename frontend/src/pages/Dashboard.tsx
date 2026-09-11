@@ -93,14 +93,14 @@ export default function Dashboard() {
         {/* Core Operational Priorities (Tier 1) */}
         <StatCard
           title="Model Accuracy"
-          value={stats ? `${stats.avgAccuracy}%` : "94.8%"}
+          value={stats && stats.avgAccuracy != null ? `${stats.avgAccuracy}%` : "N/A"}
           subtitle="±5 min tolerance"
           icon={Percent}
           isPrimary={true}
         />
         <StatCard
           title="On-Time Punctuality"
-          value={stats ? `${stats.onTimeTrains}` : "108"}
+          value={stats && stats.onTimeTrains != null ? `${stats.onTimeTrains}` : "N/A"}
           subtitle="76.1% on schedule"
           icon={CheckCircle2}
           trend={{ value: 2.4, label: "efficiency" }}
@@ -108,7 +108,7 @@ export default function Dashboard() {
         />
         <StatCard
           title="Delayed Services"
-          value={stats?.delayedTrains ?? "34"}
+          value={stats?.delayedTrains ?? "N/A"}
           subtitle=">15 min variance"
           icon={AlertTriangle}
           trend={{ value: -3.8, label: "reduction" }}
@@ -116,7 +116,7 @@ export default function Dashboard() {
         />
         <StatCard
           title="Avg Network Delay"
-          value={stats ? `${stats.avgDelay}m` : "11.2m"}
+          value={stats && stats.avgDelay != null ? `${stats.avgDelay}m` : "N/A"}
           subtitle="Corridor average"
           icon={Clock}
           isPrimary={true}
@@ -125,14 +125,14 @@ export default function Dashboard() {
         {/* Fleet Volume & Feeds (Tier 2) */}
         <StatCard
           title="Monitored Fleet"
-          value={stats?.totalTrains ?? "142"}
+          value={stats?.totalTrains ?? "N/A"}
           subtitle="Active on track lines"
           icon={TrainIcon}
           trend={{ value: 4.2, label: "volume" }}
         />
         <StatCard
           title="Active Feeds"
-          value={stats?.activePredictions ?? "87"}
+          value={stats?.activePredictions ?? "N/A"}
           subtitle="Live telemetry streams"
           icon={Activity}
         />

@@ -46,9 +46,18 @@ export default function TrainSearch() {
       // Fetch dynamic telemetry for weather coordinates
       import("../services/api").then(async ({ getTrainDetails }) => {
         const trainData = await getTrainDetails(query);
+        if (trainData) {
+          setPrediction(prev => prev ? {
+            ...prev,
+            currentStation: trainData.currentStation || "N/A",
+            currentStationCode: trainData.currentStationCode || "N/A",
+            nextStation: trainData.nextStation || "N/A",
+            nextStationCode: trainData.nextStationCode || "N/A",
+          } : prev);
+        }
         const lat = trainData?.latitude ?? 28.6139; // Default to Delhi if unavailable
         const lon = trainData?.longitude ?? 77.2090;
-        const weatherData = await getWeather(lat, lon, predData.currentStation);
+        const weatherData = await getWeather(lat, lon, trainData?.currentStation || predData.currentStation);
         setWeather(weatherData);
       });
     } catch {

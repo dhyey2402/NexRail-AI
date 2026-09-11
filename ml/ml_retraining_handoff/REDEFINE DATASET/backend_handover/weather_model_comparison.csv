@@ -1,0 +1,9 @@
+Metric,Direction,Model A (Baseline - No Weather),Model B (Weather-Aware LightGBM),Delta (Improvement),Pct Improvement (%)
+MAE (minutes),Lower is better,30.508,31.299,-0.791,-2.59
+RMSE (minutes),Lower is better,129.879,129.282,0.597,0.46
+R² Score,Higher is better,0.1765,0.1841,0.0076,4.31
+MedAE (minutes),Lower is better,10.338,11.86,-1.522,-14.72
+Within ±5 min (%),Higher is better,35.27,32.98,-2.29,-6.49
+Within ±10 min (%),Higher is better,49.25,46.16,-3.09,-6.27
+Within ±15 min (%),Higher is better,59.55,56.12,-3.43,-5.76
+Within ±30 min (%),Higher is better,77.18,74.48,-2.7,-3.5

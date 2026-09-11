@@ -170,10 +170,10 @@ export async function predictETA(trainNumber: string): Promise<Prediction | null
     return {
       trainNumber: trainNumber,
       trainName: `Train ${trainNumber}`,
-      currentStation: "Unknown",
-      currentStationCode: "UNK",
-      nextStation: "Unknown",
-      nextStationCode: "UNK",
+      currentStation: "N/A",
+      currentStationCode: "N/A",
+      nextStation: "N/A",
+      nextStationCode: "N/A",
       currentDelay: data.predicted_delay, // Placeholder mapping
       predictedETA: data.predicted_eta,
       predictedDelay: data.predicted_delay,
@@ -187,12 +187,12 @@ export async function predictETA(trainNumber: string): Promise<Prediction | null
         nextSignals: ["green"]
       },
       shapBreakdown: shapBreakdown,
-      reasoning: data.reasoning.map((r: string) => ({
+      reasoning: data.reasoning && data.reasoning.length > 0 && data.reasoning[0] !== "" ? data.reasoning.map((r: string) => ({
         factor: "Reasoning",
         description: r,
         impact: "neutral",
         weight: 0.5
-      })),
+      })) : [],
       aiDispatchRecommendation: {
         action: data.alternative_plan?.plan_name || "Maintain Schedule",
         expectedSavingMinutes: data.alternative_plan?.recoverable_minutes || 0,
@@ -212,7 +212,7 @@ export async function getWeather(lat: number, lon: number, stationCode?: string)
     
     // Map WeatherResponse
     return {
-      station: `${stationCode} Station`,
+      station: stationCode && stationCode !== "N/A" ? `${stationCode} Station` : `${lat.toFixed(2)}°N, ${lon.toFixed(2)}°E`,
       condition: data.weather_condition,
       temperature: data.temperature,
       humidity: data.humidity,
@@ -226,7 +226,7 @@ export async function getWeather(lat: number, lon: number, stationCode?: string)
   } catch (error) {
     // Fallback if weather API fails
     return {
-      station: stationCode || `${lat}, ${lon}`,
+      station: stationCode && stationCode !== "N/A" ? `${stationCode} Station` : `${lat.toFixed(2)}°N, ${lon.toFixed(2)}°E`,
       condition: "Unknown",
       temperature: 0,
       humidity: 0,

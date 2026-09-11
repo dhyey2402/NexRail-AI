@@ -28,7 +28,7 @@ export default function RecentPredictions({ predictions }: RecentPredictionsProp
           </h2>
         </div>
         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700/60">
-          87 active feeds
+          {predictions.length > 0 ? `${predictions.length} active feeds` : "N/A"}
         </span>
       </div>
 
@@ -69,10 +69,11 @@ export default function RecentPredictions({ predictions }: RecentPredictionsProp
                 <td className="px-4 py-2.5">
                   <span className={cn(
                     "font-semibold",
+                    pred.delay == null ? "text-zinc-500" :
                     pred.delay === 0 ? "text-emerald-400" :
                     pred.delay < 15 ? "text-amber-400" : "text-rose-400"
                   )}>
-                    {pred.delay === 0 ? "On Time" : `+${pred.delay}m`}
+                    {pred.delay == null ? "N/A" : pred.delay === 0 ? "On Time" : `+${pred.delay}m`}
                   </span>
                 </td>
                 <td className="px-4 py-2.5">
@@ -87,15 +88,17 @@ export default function RecentPredictions({ predictions }: RecentPredictionsProp
                         style={{ width: `${pred.confidence ?? 0}%` }}
                       />
                     </div>
-                    <span className="text-[10px] text-zinc-400">{(pred.confidence ?? 0).toFixed(1)}%</span>
+                    <span className="text-[10px] text-zinc-400">
+                      {pred.confidence != null ? `${pred.confidence.toFixed(1)}%` : "N/A"}
+                    </span>
                   </div>
                 </td>
                 <td className="px-4 py-2.5">
                   <span className={cn(
                     "inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-medium border font-sans",
-                    getStatusBg(pred.status)
+                    pred.status && pred.status !== "—" ? getStatusBg(pred.status) : "bg-zinc-800 text-zinc-400 border-zinc-700"
                   )}>
-                    {getStatusLabel(pred.status)}
+                    {pred.status && pred.status !== "—" ? getStatusLabel(pred.status) : "N/A"}
                   </span>
                 </td>
               </tr>

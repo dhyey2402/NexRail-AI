@@ -115,7 +115,7 @@ export default function PredictionCard({ prediction }: PredictionCardProps) {
         <div className="p-3.5">
           <div className="flex items-center gap-1.5 text-zinc-400 text-xs mb-1">
             <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
-            <span>Estimated Delay</span>
+            <span>Predicted Destination Delay</span>
           </div>
           <p className={cn(
             "text-lg font-bold font-mono",

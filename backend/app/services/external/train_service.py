@@ -57,7 +57,7 @@ class TrainService(BaseAPIClient):
                 )
                 if cached:
                     logger.info(f"Returning cached train status for train {clean_train_number} (expires: {cached.expires_at})")
-                    return {
+                    cached_data = {
                         "train_number": cached.train_number,
                         "train_name": getattr(cached, "train_name", "") or f"Train {cached.train_number}",
                         "current_station": cached.current_station,
@@ -67,7 +67,24 @@ class TrainService(BaseAPIClient):
                         "current_delay": int(cached.current_delay),
                         "speed": float(cached.speed),
                         "last_updated": cached.cached_at,
+                        "source": None,
+                        "destination": None,
+                        "train_type": None,
+                        "platform": None,
+                        "stations": [],
                     }
+                    try:
+                        from app.services.external.train_metadata import TrainMetadataService
+                        meta = TrainMetadataService.get_train_metadata(clean_train_number)
+                        if meta:
+                            cached_data["source"] = meta.get("source")
+                            cached_data["destination"] = meta.get("destination")
+                            cached_data["train_type"] = meta.get("train_type")
+                            if not cached_data["train_name"] or cached_data["train_name"] == f"Train {cached.train_number}":
+                                cached_data["train_name"] = meta.get("train_name", cached_data["train_name"])
+                    except Exception:
+                        pass
+                    return cached_data
             except Exception as cache_err:
                 logger.warning(f"Error reading TrainCache for train {clean_train_number}: {cache_err}")
 

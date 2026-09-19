@@ -14,10 +14,12 @@ build/
 *.bndl
 
 # Large Data & Database files
-data/
+/data/
 *.db
 *.sqlite
 *.sqlite3
+!backend/app/data/
+!backend/app/data/**
 
 # Python
 __pycache__/

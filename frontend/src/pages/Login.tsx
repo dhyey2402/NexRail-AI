@@ -87,13 +87,48 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 rounded-md bg-[var(--nr-accent)] hover:bg-[var(--nr-accent-hover)] disabled:opacity-50 text-white text-[13px] font-medium py-2.5 transition-colors"
+            className="w-full flex items-center justify-center gap-2 rounded-md bg-[var(--nr-accent)] hover:bg-[var(--nr-accent-hover)] disabled:opacity-50 text-white text-[13px] font-medium py-2.5 transition-colors cursor-pointer"
           >
             {loading ? (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : null}
             {loading ? "Signing in..." : "Sign In"}
           </button>
+
+          {/* Testing Credentials for Evaluation */}
+          <div className="mt-4 pt-3.5 border-t border-[var(--nr-border)]">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[11px] font-medium tracking-wide uppercase text-[var(--nr-accent)] flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--nr-accent)]" />
+                Testing Credentials
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail("admin@nexrail.in");
+                  setPassword("admin@123");
+                }}
+                className="text-[11px] font-medium text-[var(--nr-accent)] hover:text-[var(--nr-accent-hover)] hover:underline cursor-pointer"
+              >
+                Auto-fill
+              </button>
+            </div>
+
+            <p className="text-[11px] text-[var(--nr-text-muted)] mb-2 leading-relaxed">
+              Use the credentials below to test and access the Admin Operations Dashboard:
+            </p>
+
+            <div className="space-y-1.5 rounded-md bg-[var(--nr-bg)] border border-[var(--nr-border)] px-3 py-2 font-mono text-[12px]">
+              <div className="flex items-center justify-between">
+                <span className="text-[var(--nr-text-muted)] font-sans text-[11px]">Email</span>
+                <span className="text-[var(--nr-text)] select-all font-medium">admin@nexrail.in</span>
+              </div>
+              <div className="flex items-center justify-between pt-1 border-t border-[var(--nr-border-subtle)]">
+                <span className="text-[var(--nr-text-muted)] font-sans text-[11px]">Password</span>
+                <span className="text-[var(--nr-text)] select-all font-medium">admin@123</span>
+              </div>
+            </div>
+          </div>
         </form>
 
         <p className="text-center text-[11px] text-[var(--nr-text-faint)] mt-6">

@@ -8,7 +8,15 @@ import type {
 } from '@/types/train'
 import { TRAIN_STATUS } from '@/types/train'
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? '/api'
+// Resolve API base URL from environment variables, supporting VITE_API_URL and VITE_API_BASE_URL.
+// Normalizes trailing slashes and ensures /api prefix is present.
+const rawApiUrl = (
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_BASE_URL ||
+  "http://localhost:8000"
+).trim().replace(/\/+$/, "");
+
+const BASE_URL = rawApiUrl.endsWith("/api") ? rawApiUrl : `${rawApiUrl}/api`;
 
 export class ApiError extends Error {
   status: number

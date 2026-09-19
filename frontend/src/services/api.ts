@@ -9,8 +9,15 @@ import type {
   DashboardStats,
 } from "../types";
 
-// Base URL configured via env vars
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+// Resolve API base URL from environment variables, supporting VITE_API_URL and VITE_API_BASE_URL.
+// Normalizes trailing slashes and ensures /api prefix is present.
+const rawApiUrl = (
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_BASE_URL ||
+  "http://localhost:8000"
+).trim().replace(/\/+$/, "");
+
+export const API_BASE_URL = rawApiUrl.endsWith("/api") ? rawApiUrl : `${rawApiUrl}/api`;
 
 import { getToken, clearToken } from "./tokenStorage";
 

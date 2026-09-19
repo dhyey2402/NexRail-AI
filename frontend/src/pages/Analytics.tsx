@@ -27,89 +27,53 @@ export default function Analytics() {
   }, [timeRange]);
 
   return (
-    <div className="space-y-5">
-      {/* Header Banner */}
-      <div className="app-card p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-2 h-2 rounded-full bg-sky-400" />
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-              Fleet Performance & ML Intelligence
-            </span>
-          </div>
-          <h1 className="text-lg font-semibold text-zinc-100 tracking-tight">
-            Network Analytics & Model Telemetry
-          </h1>
-          <p className="text-xs text-zinc-400 mt-0.5">
-            Aggregated operational throughput, corridor delay distribution, and LightGBM accuracy telemetry.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <div className="bg-zinc-900 p-1 rounded-lg border border-zinc-800 flex items-center gap-1">
+    <div className="space-y-4">
+      {/* Time Range */}
+      <div className="flex items-center justify-between">
+        <div />
+        <div className="bg-[var(--nr-surface)] p-0.5 rounded-md border border-[var(--nr-border)] flex items-center gap-0.5">
+          {["24h", "7d", "30d"].map((range) => (
             <button
-              onClick={() => setTimeRange("24h")}
-              className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-                timeRange === "24h"
-                  ? "bg-zinc-100 text-zinc-950 font-semibold"
-                  : "text-zinc-400 hover:text-zinc-200"
+              key={range}
+              onClick={() => setTimeRange(range)}
+              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
+                timeRange === range
+                  ? "bg-[var(--nr-accent-muted)] text-[var(--nr-accent)] font-semibold"
+                  : "text-[var(--nr-text-muted)] hover:text-[var(--nr-text)]"
               }`}
             >
-              24h
+              {range === "24h" ? "24h" : range === "7d" ? "7 Days" : "30 Days"}
             </button>
-            <button
-              onClick={() => setTimeRange("7d")}
-              className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-                timeRange === "7d"
-                  ? "bg-zinc-100 text-zinc-950 font-semibold"
-                  : "text-zinc-400 hover:text-zinc-200"
-              }`}
-            >
-              7 Days
-            </button>
-            <button
-              onClick={() => setTimeRange("30d")}
-              className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-                timeRange === "30d"
-                  ? "bg-zinc-100 text-zinc-950 font-semibold"
-                  : "text-zinc-400 hover:text-zinc-200"
-              }`}
-            >
-              30 Days
-            </button>
-          </div>
+          ))}
         </div>
       </div>
 
       {isLoading || !data ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 animate-pulse">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-pulse">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-64 bg-zinc-900/60 rounded-xl border border-zinc-800" />
+            <div key={i} className="h-64 nr-card" />
           ))}
         </div>
       ) : data.delayDistribution.length === 0 && data.predictionConfidence.length === 0 ? (
-        <div className="p-10 border border-zinc-800 border-dashed rounded-xl flex flex-col items-center justify-center text-center">
-          <div className="w-12 h-12 bg-zinc-900 rounded-full flex items-center justify-center mb-3">
-            <Activity className="w-5 h-5 text-zinc-600" />
+        <div className="p-10 border border-dashed border-[var(--nr-border)] rounded-md flex flex-col items-center justify-center text-center">
+          <div className="w-9 h-9 bg-[var(--nr-surface-raised)] border border-[var(--nr-border)] rounded-md flex items-center justify-center mb-3">
+            <Activity className="w-4 h-4 text-[var(--nr-text-muted)]" />
           </div>
-          <h3 className="text-zinc-200 font-medium">No analytics available yet.</h3>
-          <p className="text-zinc-500 text-xs mt-1 max-w-sm">
-            Analytics require a critical mass of operational history. Telemetry data is currently insufficient for modeling.
+          <h3 className="text-[13px] font-semibold text-[var(--nr-text)]">No analytics available</h3>
+          <p className="text-[12px] text-[var(--nr-text-muted)] mt-1 max-w-sm">
+            Not enough prediction history to generate analytics.
           </p>
         </div>
       ) : (
-        <div className="space-y-5">
-          {/* 2-column grid for top 2 charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <DelayDistribution data={data.delayDistribution} />
             <ConfidenceChart data={data.predictionConfidence} />
           </div>
 
-          {/* Full width 24-hour network delay trend */}
           <ETATrendChart data={data.etaTrend} />
 
-          {/* 2-column grid for bottom 2 charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <TopDelayedTrains data={data.topDelayedTrains} />
             <DelayByZone data={data.delayByZone} />
           </div>

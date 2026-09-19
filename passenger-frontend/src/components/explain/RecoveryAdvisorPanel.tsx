@@ -18,7 +18,7 @@ export function RecoveryAdvisorPanel({ advice }: { advice: RecoveryAdvice[] | un
       </CardHeader>
       <div className="mt-4 space-y-3 px-5 pb-6">
         {advice.map((item, i) => (
-          <div key={i} className="flex gap-3 rounded-lg border border-border bg-ground p-3">
+          <div key={i} className="flex gap-3 rounded-md border border-border bg-surface-2 p-3">
             <div className="flex-1">
               <p className="text-sm font-medium text-ink">{item.action}</p>
               <p className="mt-1 text-xs text-muted">{item.reason}</p>

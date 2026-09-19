@@ -32,54 +32,54 @@ export function LoginPage() {
 
   return (
     <div className="flex min-h-[80vh] items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-surface p-8 shadow-2xl shadow-black/20">
-        <div className="mb-8 flex flex-col items-center justify-center text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent/10">
-            <Train className="h-6 w-6 text-accent" />
+      <Card className="w-full max-w-sm bg-surface p-6">
+        <div className="mb-6 flex flex-col items-center justify-center text-center">
+          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-accent">
+            <Train className="h-4 w-4 text-white" />
           </div>
-          <CardTitle className="mt-4 text-2xl">Welcome Back</CardTitle>
-          <CardHint>Sign in to your RailWise account</CardHint>
+          <CardTitle className="mt-3 text-lg">Sign In</CardTitle>
+          <CardHint>Access your NexRail account</CardHint>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3.5">
           {error && (
-            <div className="rounded-lg bg-danger/10 p-3 text-sm text-danger">
+            <div className="rounded-md bg-danger/10 border border-danger/20 p-2.5 text-[12px] text-danger">
               {error}
             </div>
           )}
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-ink">Email Address</label>
+          <div className="space-y-1.5">
+            <label className="text-[12px] font-medium text-ink">Email</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-border bg-ground px-4 py-2.5 text-ink outline-none transition-colors focus:border-accent"
-              placeholder="Enter your email"
+              className="w-full rounded-md border border-border bg-surface-2 px-3 py-2 text-[13px] text-ink outline-none transition-colors focus:border-accent"
+              placeholder="you@example.com"
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-ink">Password</label>
+          <div className="space-y-1.5">
+            <label className="text-[12px] font-medium text-ink">Password</label>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-border bg-ground px-4 py-2.5 text-ink outline-none transition-colors focus:border-accent"
+              className="w-full rounded-md border border-border bg-surface-2 px-3 py-2 text-[13px] text-ink outline-none transition-colors focus:border-accent"
               placeholder="Enter your password"
             />
           </div>
 
-          <Button type="submit" className="w-full py-6 text-base" disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Signing in...' : 'Sign In'}
           </Button>
 
-          <p className="mt-4 text-center text-sm text-muted">
+          <p className="text-center text-[12px] text-muted">
             Don't have an account?{' '}
             <Link to="/register" className="font-medium text-accent hover:underline">
-              Register here
+              Register
             </Link>
           </p>
         </form>

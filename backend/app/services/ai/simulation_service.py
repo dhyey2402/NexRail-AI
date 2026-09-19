@@ -11,13 +11,22 @@ from typing import Dict, Any, Union, Optional
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-# Ensure ML module path is accessible
+# Ensure ML module path is accessible across deployment environments
 CURRENT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = CURRENT_DIR.parent.parent.parent.parent  # c:\Projects\sih26
-ML_DIR = PROJECT_ROOT / "ml"
+BACKEND_DIR = CURRENT_DIR.parent.parent.parent
+PROJECT_ROOT = BACKEND_DIR.parent
 
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+ML_CANDIDATE_DIRS = [
+    PROJECT_ROOT / "ml",
+    BACKEND_DIR / "ml",
+    Path.cwd() / "ml",
+    Path.cwd().parent / "ml",
+]
+
+ML_DIR = next((d for d in ML_CANDIDATE_DIRS if (d / "simulate.py").is_file()), ML_CANDIDATE_DIRS[0])
+
+if str(ML_DIR.parent) not in sys.path:
+    sys.path.insert(0, str(ML_DIR.parent))
 if str(ML_DIR) not in sys.path:
     sys.path.insert(0, str(ML_DIR))
 

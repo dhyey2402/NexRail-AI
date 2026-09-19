@@ -6,7 +6,7 @@ import WhatIfSimulation from "./pages/WhatIfSimulation";
 import LiveMonitor from "./pages/LiveMonitor";
 import Analytics from "./pages/Analytics";
 import PredictionHistory from "./pages/PredictionHistory";
-import { Login } from "./pages/Login";
+import Login from "./pages/Login";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 

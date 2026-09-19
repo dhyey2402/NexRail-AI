@@ -36,6 +36,7 @@ async def lifespan(app: FastAPI):
         logger.info("Successfully loaded ML model artifacts during startup.")
     except Exception as e:
         logger.error(f"Failed to load ML model during startup: {e}", exc_info=True)
+        raise RuntimeError(f"Startup aborted: failed to load ML model artifacts: {e}") from e
     
     yield
 
@@ -51,13 +52,12 @@ app = FastAPI(
 )
 
 # Configure CORS (Cross-Origin Resource Sharing) middleware
-origins = settings.cors_origins.split(",") if settings.cors_origins else []
-
+# Single source of truth from configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=settings.parsed_cors_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 

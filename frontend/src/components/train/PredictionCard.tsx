@@ -15,26 +15,21 @@ interface PredictionCardProps {
 
 export default function PredictionCard({ prediction }: PredictionCardProps) {
   return (
-    <div className="app-card overflow-hidden">
-      {/* Header Banner */}
-      <div className="px-5 py-3.5 border-b border-zinc-800/80 bg-zinc-900/40 flex flex-wrap items-center justify-between gap-3">
+    <div className="nr-card overflow-hidden">
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-[var(--nr-border)] flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <span className="text-xs font-mono font-bold bg-zinc-800 text-zinc-200 px-2 py-0.5 rounded border border-zinc-700/60">
+          <span className="text-[12px] font-mono font-bold bg-[var(--nr-surface-raised)] text-[var(--nr-text)] px-2 py-0.5 rounded border border-[var(--nr-border)]">
             #{prediction.trainNumber}
           </span>
-          <div>
-            <h3 className="text-sm font-semibold text-zinc-100">
-              {prediction.trainName}
-            </h3>
-            <p className="text-[11px] text-zinc-400 font-mono">
-              LightGBM Inference Feed · Auto-Interlocking
-            </p>
-          </div>
+          <h3 className="text-[13px] font-semibold text-[var(--nr-text)]">
+            {prediction.trainName}
+          </h3>
         </div>
 
         <span
           className={cn(
-            "inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium border",
+            "inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium border",
             prediction.currentDelay === 0
               ? getStatusBg("on-time")
               : prediction.currentDelay < 15
@@ -49,49 +44,46 @@ export default function PredictionCard({ prediction }: PredictionCardProps) {
         </span>
       </div>
 
-      {/* Station Corridor Timeline Route */}
-      <div className="px-5 py-4 border-b border-zinc-800/60 bg-zinc-950/40">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          {/* Current Station */}
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center shrink-0 text-sky-400">
-              <MapPin className="w-4 h-4" />
+      {/* Station Route */}
+      <div className="px-4 py-3.5 border-b border-[var(--nr-border)]/60">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-md bg-[var(--nr-surface-raised)] border border-[var(--nr-border)] flex items-center justify-center shrink-0 text-[var(--nr-accent)]">
+              <MapPin className="w-3.5 h-3.5" />
             </div>
             <div>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Current Station</p>
-              <p className="text-xs font-semibold text-zinc-100">{prediction.currentStation}</p>
-              <p className="text-[10px] font-mono text-zinc-400 font-medium">{prediction.currentStationCode}</p>
+              <p className="text-[10px] text-[var(--nr-text-muted)] uppercase tracking-wider">Current</p>
+              <p className="text-[12px] font-semibold text-[var(--nr-text)]">{prediction.currentStation}</p>
+              <p className="text-[10px] font-mono text-[var(--nr-text-secondary)]">{prediction.currentStationCode}</p>
             </div>
           </div>
 
-          {/* Clean Track Segment */}
           <div className="hidden sm:flex flex-1 items-center justify-center px-4">
             <div className="w-full relative flex items-center">
-              <div className="h-0.5 w-full bg-zinc-800" />
-              <div className="h-0.5 w-2/3 bg-sky-500/70" />
-              <ArrowRight className="w-3.5 h-3.5 text-sky-400 ml-1 shrink-0" />
+              <div className="h-px w-full bg-[var(--nr-border)]" />
+              <div className="h-px w-2/3 bg-[var(--nr-accent)]/50 absolute left-0" />
+              <ArrowRight className="w-3.5 h-3.5 text-[var(--nr-accent)] ml-1 shrink-0" />
             </div>
           </div>
 
-          {/* Next Station Target */}
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center shrink-0 text-emerald-400">
-              <MapPin className="w-4 h-4" />
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-md bg-[var(--nr-surface-raised)] border border-[var(--nr-border)] flex items-center justify-center shrink-0 text-[var(--nr-success)]">
+              <MapPin className="w-3.5 h-3.5" />
             </div>
             <div>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Next Target Station</p>
-              <p className="text-xs font-semibold text-zinc-100">{prediction.nextStation}</p>
-              <p className="text-[10px] font-mono text-emerald-400 font-medium">{prediction.nextStationCode}</p>
+              <p className="text-[10px] text-[var(--nr-text-muted)] uppercase tracking-wider">Next</p>
+              <p className="text-[12px] font-semibold text-[var(--nr-text)]">{prediction.nextStation}</p>
+              <p className="text-[10px] font-mono text-[var(--nr-success)]">{prediction.nextStationCode}</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Grid of Key Telemetry Metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-zinc-800/60 bg-zinc-900/20">
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-[var(--nr-border)]/60">
         <div className="p-3.5">
-          <div className="flex items-center gap-1.5 text-zinc-400 text-xs mb-1">
-            <Clock className="w-3.5 h-3.5 text-amber-400" />
+          <div className="flex items-center gap-1.5 text-[var(--nr-text-secondary)] text-[11px] mb-1">
+            <Clock className="w-3 h-3 text-[var(--nr-warning)]" />
             <span>Current Delay</span>
           </div>
           <p className={cn(
@@ -103,19 +95,19 @@ export default function PredictionCard({ prediction }: PredictionCardProps) {
         </div>
 
         <div className="p-3.5">
-          <div className="flex items-center gap-1.5 text-zinc-400 text-xs mb-1">
-            <Clock className="w-3.5 h-3.5 text-sky-400" />
+          <div className="flex items-center gap-1.5 text-[var(--nr-text-secondary)] text-[11px] mb-1">
+            <Clock className="w-3 h-3 text-[var(--nr-accent)]" />
             <span>Predicted ETA</span>
           </div>
-          <p className="text-lg font-bold text-zinc-100 font-mono">
+          <p className="text-lg font-bold text-[var(--nr-text)] font-mono">
             {prediction.predictedETA}
           </p>
         </div>
 
         <div className="p-3.5">
-          <div className="flex items-center gap-1.5 text-zinc-400 text-xs mb-1">
-            <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
-            <span>Predicted Destination Delay</span>
+          <div className="flex items-center gap-1.5 text-[var(--nr-text-secondary)] text-[11px] mb-1">
+            <AlertCircle className="w-3 h-3 text-[var(--nr-danger)]" />
+            <span>Destination Delay</span>
           </div>
           <p className={cn(
             "text-lg font-bold font-mono",
@@ -127,9 +119,9 @@ export default function PredictionCard({ prediction }: PredictionCardProps) {
         </div>
 
         <div className="p-3.5">
-          <div className="flex items-center gap-1.5 text-zinc-400 text-xs mb-1">
-            <Gauge className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Model Confidence</span>
+          <div className="flex items-center gap-1.5 text-[var(--nr-text-secondary)] text-[11px] mb-1">
+            <Gauge className="w-3 h-3 text-[var(--nr-success)]" />
+            <span>Confidence</span>
           </div>
           <p className={cn(
             "text-lg font-bold font-mono",
@@ -141,25 +133,20 @@ export default function PredictionCard({ prediction }: PredictionCardProps) {
         </div>
       </div>
 
-      {/* AI Dispatch Advisory Banner */}
+      {/* Dispatch Advisory */}
       {prediction.aiDispatchRecommendation && (
-        <div className="p-3.5 bg-zinc-900/60 border-t border-zinc-800/80 flex items-start gap-3">
-          <div className="w-6 h-6 rounded-md bg-zinc-800 border border-zinc-700/60 flex items-center justify-center shrink-0 mt-0.5 text-sky-400">
-            <Lightbulb className="w-3.5 h-3.5" />
-          </div>
+        <div className="p-3.5 border-t border-[var(--nr-border)] flex items-start gap-2.5">
+          <Lightbulb className="w-3.5 h-3.5 text-[var(--nr-accent)] mt-0.5 shrink-0" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
-              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-zinc-800 text-zinc-300 font-medium">
-                Dispatch Advisory
-              </span>
-              <span className="text-xs font-semibold text-zinc-200 truncate">
+              <span className="text-[11px] font-medium text-[var(--nr-text)]">
                 {prediction.aiDispatchRecommendation.action}
               </span>
-              <span className="text-[11px] font-mono text-emerald-400 font-medium ml-auto">
+              <span className="text-[10px] font-mono text-[var(--nr-success)]">
                 Save ~{prediction.aiDispatchRecommendation.expectedSavingMinutes}m
               </span>
             </div>
-            <p className="text-xs text-zinc-400 leading-relaxed">
+            <p className="text-[12px] text-[var(--nr-text-secondary)] leading-relaxed">
               {prediction.aiDispatchRecommendation.rationale}
             </p>
           </div>

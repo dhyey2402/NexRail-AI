@@ -23,20 +23,19 @@ export default function TrainCard({ train }: TrainCardProps) {
   };
 
   return (
-    <div className="app-card-interactive p-3 flex flex-col justify-between h-full">
+    <div className="nr-card-interactive p-3 flex flex-col justify-between h-full">
       <div>
-        {/* Header Row */}
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-6 h-6 rounded-md bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center shrink-0 text-zinc-300">
+            <div className="w-6 h-6 rounded-md bg-[var(--nr-surface-raised)] border border-[var(--nr-border)] flex items-center justify-center shrink-0 text-[var(--nr-text-secondary)]">
               <TrainIcon className="w-3.5 h-3.5" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 font-mono">
-                <span className="text-xs font-bold text-sky-400">#{train.trainNumber}</span>
+                <span className="text-[12px] font-bold text-[var(--nr-accent)]">#{train.trainNumber}</span>
                 {getSignalBadge(train.signalAspect)}
               </div>
-              <h4 className="text-xs font-medium text-zinc-200 truncate">
+              <h4 className="text-[12px] font-medium text-[var(--nr-text)] truncate">
                 {train.trainName}
               </h4>
             </div>
@@ -44,7 +43,7 @@ export default function TrainCard({ train }: TrainCardProps) {
 
           <span
             className={cn(
-              "inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-medium border shrink-0",
+              "inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border shrink-0",
               getStatusBg(train.status)
             )}
           >
@@ -52,28 +51,26 @@ export default function TrainCard({ train }: TrainCardProps) {
           </span>
         </div>
 
-        {/* Block & Route */}
-        <div className="bg-zinc-900/60 rounded-md px-2.5 py-1.5 border border-zinc-800/60 mb-2 space-y-0.5">
+        <div className="bg-[var(--nr-bg)] rounded-md px-2.5 py-1.5 border border-[var(--nr-border)] mb-2 space-y-0.5">
           <div className="flex items-center justify-between text-[11px] font-mono">
-            <span className="text-zinc-200 font-semibold">{train.currentStationCode}</span>
-            <ArrowRight className="w-3 h-3 text-zinc-600" />
-            <span className="text-zinc-400">{train.nextStationCode}</span>
+            <span className="text-[var(--nr-text)] font-semibold">{train.currentStationCode}</span>
+            <ArrowRight className="w-3 h-3 text-[var(--nr-text-faint)]" />
+            <span className="text-[var(--nr-text-secondary)]">{train.nextStationCode}</span>
           </div>
-          <div className="text-[10px] font-mono text-zinc-500 flex items-center justify-between truncate">
+          <div className="text-[10px] font-mono text-[var(--nr-text-muted)] flex items-center justify-between truncate">
             <span>{train.blockOccupancy || "SEC-MAIN"}</span>
-            <span className="text-zinc-400">{train.locoType?.split(" ")[0] || "WAP-7"}</span>
+            <span className="text-[var(--nr-text-secondary)]">{train.locoType?.split(" ")[0] || "WAP-7"}</span>
           </div>
         </div>
       </div>
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-3 gap-1 pt-1.5 border-t border-zinc-800/60 font-mono text-[10px]">
+      <div className="grid grid-cols-3 gap-1 pt-1.5 border-t border-[var(--nr-border)] font-mono text-[10px]">
         <div>
-          <div className="text-zinc-500 text-[9px] uppercase">Speed</div>
-          <div className="text-zinc-200 font-semibold">{train.speed} km/h</div>
+          <div className="text-[var(--nr-text-muted)] text-[9px] uppercase">Speed</div>
+          <div className="text-[var(--nr-text)] font-semibold">{train.speed} km/h</div>
         </div>
         <div>
-          <div className="text-zinc-500 text-[9px] uppercase">Delay</div>
+          <div className="text-[var(--nr-text-muted)] text-[9px] uppercase">Delay</div>
           <div className={cn(
             "font-semibold",
             train.currentDelay === 0 ? "text-emerald-400" :
@@ -83,8 +80,8 @@ export default function TrainCard({ train }: TrainCardProps) {
           </div>
         </div>
         <div>
-          <div className="text-zinc-500 text-[9px] uppercase">Zone</div>
-          <div className="text-zinc-300 font-medium">{train.zone}</div>
+          <div className="text-[var(--nr-text-muted)] text-[9px] uppercase">Zone</div>
+          <div className="text-[var(--nr-text-secondary)] font-medium">{train.zone}</div>
         </div>
       </div>
     </div>

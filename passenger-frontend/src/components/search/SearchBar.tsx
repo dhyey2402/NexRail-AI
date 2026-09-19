@@ -30,7 +30,7 @@ export function SearchBar({ initialValue = '', onSubmit, size = 'default' }: Sea
           placeholder="Enter train number"
           aria-label="Train number"
           className={cn(
-            'w-full rounded-[10px] border border-border bg-surface-2 pl-10 pr-3 text-sm text-ink outline-none placeholder:text-faint focus:border-accent',
+            'w-full rounded-md border border-border bg-surface-2 pl-10 pr-3 text-[13px] text-ink outline-none placeholder:text-faint focus:border-accent font-mono',
             size === 'large' ? 'h-12' : 'h-10',
           )}
         />

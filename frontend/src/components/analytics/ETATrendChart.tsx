@@ -15,50 +15,50 @@ interface ETATrendChartProps {
 
 export default function ETATrendChart({ data }: ETATrendChartProps) {
   return (
-    <div className="app-card p-4">
+    <div className="nr-card p-4">
       <div className="mb-3">
-        <h3 className="text-xs font-semibold text-zinc-100">24-Hour Network Delay Variance</h3>
-        <p className="text-[11px] text-zinc-400 mt-0.5">
-          Predicted vs Actual aggregated delay throughout peak and off-peak hours
+        <h3 className="text-[13px] font-semibold text-[var(--nr-text)]">24-Hour Delay Trend</h3>
+        <p className="text-[11px] text-[var(--nr-text-muted)] mt-0.5">
+          Predicted vs actual delay across peak and off-peak hours
         </p>
       </div>
 
-      <div className="h-[250px] w-full">
+      <div className="h-[230px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="colorPred" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#0284c7" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#0284c7" stopOpacity={0.0} />
+                <stop offset="5%" stopColor="#3b82c4" stopOpacity={0.25} />
+                <stop offset="95%" stopColor="#3b82c4" stopOpacity={0.0} />
               </linearGradient>
               <linearGradient id="colorAct" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.0} />
+                <stop offset="5%" stopColor="#c58f2a" stopOpacity={0.25} />
+                <stop offset="95%" stopColor="#c58f2a" stopOpacity={0.0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="2 2" stroke="#27272a" vertical={false} />
+            <CartesianGrid strokeDasharray="2 2" stroke="#232938" vertical={false} />
             <XAxis
               dataKey="time"
-              stroke="#71717a"
+              stroke="#5c657a"
               fontSize={10}
               tickLine={false}
-              axisLine={{ stroke: "#3f3f46" }}
+              axisLine={{ stroke: "#2f3749" }}
             />
             <YAxis
-              stroke="#71717a"
+              stroke="#5c657a"
               fontSize={10}
               tickLine={false}
-              axisLine={{ stroke: "#3f3f46" }}
+              axisLine={{ stroke: "#2f3749" }}
               unit="m"
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#18181b",
-                borderColor: "#3f3f46",
-                borderRadius: "8px",
+                backgroundColor: "#12151c",
+                borderColor: "#2f3749",
+                borderRadius: "6px",
                 fontSize: "11px",
-                color: "#f4f4f5",
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.5)",
+                color: "#e8eaf0",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4)",
               }}
               formatter={(value) => [`${value} mins avg delay`]}
             />
@@ -70,8 +70,8 @@ export default function ETATrendChart({ data }: ETATrendChartProps) {
             <Area
               type="monotone"
               dataKey="predicted"
-              name="Predicted Delay"
-              stroke="#0284c7"
+              name="Predicted"
+              stroke="#3b82c4"
               strokeWidth={1.5}
               fillOpacity={1}
               fill="url(#colorPred)"
@@ -79,8 +79,8 @@ export default function ETATrendChart({ data }: ETATrendChartProps) {
             <Area
               type="monotone"
               dataKey="actual"
-              name="Actual Delay"
-              stroke="#f59e0b"
+              name="Actual"
+              stroke="#c58f2a"
               strokeWidth={1.5}
               fillOpacity={1}
               fill="url(#colorAct)"

@@ -101,12 +101,12 @@ export default function TrainMap({
         return [s.lat, s.lng] as [number, number];
       });
       L.polyline(coords, {
-        color: theme === 'dark' ? '#27272a' : '#d4d4d8',
+        color: theme === 'dark' ? '#232938' : '#dfe2ea',
         weight: 3,
       }).addTo(map);
       
       L.polyline(coords, {
-        color: theme === 'dark' ? '#3f3f46' : '#a1a1aa',
+        color: theme === 'dark' ? '#2f3749' : '#c8cdd8',
         weight: 1,
         dashArray: '3 3',
       }).addTo(map);
@@ -121,13 +121,13 @@ export default function TrainMap({
       dot.className = cn(
         'rounded-full border-2 transition-colors duration-150',
         st.isHub ? 'w-3 h-3' : 'w-2 h-2',
-        theme === 'dark' ? 'bg-zinc-900 border-zinc-500' : 'bg-white border-zinc-400'
+        theme === 'dark' ? 'bg-[#0a0c10] border-[#5c657a]' : 'bg-white border-[#8b93a5]'
       );
       
       const label = document.createElement('div');
       label.className = cn(
         'mt-1 font-mono text-[9px] font-semibold whitespace-nowrap',
-        theme === 'dark' ? 'text-zinc-400' : 'text-zinc-500'
+        theme === 'dark' ? 'text-[#8b93a5]' : 'text-[#5c657a]'
       );
       label.innerText = st.code;
       
@@ -167,11 +167,11 @@ export default function TrainMap({
           className={cn(
             "relative w-5 h-5 rounded-full border flex items-center justify-center transition-all shadow-xs cursor-pointer",
             isDelayed
-              ? "bg-rose-950 border-rose-500/80 text-rose-300"
+              ? "bg-rose-950 border-[#c44a3e]/80 text-rose-300"
               : isSlight
-                ? "bg-amber-950 border-amber-500/80 text-amber-300"
-                : "bg-zinc-900 border-sky-400 text-sky-400",
-            isSelected && "scale-125 ring-2 ring-white ring-offset-1 ring-offset-zinc-950 z-50",
+                ? "bg-amber-950 border-[#c58f2a]/80 text-amber-300"
+                : "bg-[#12151c] border-[#3b82c4] text-[#3b82c4]",
+            isSelected && "scale-125 ring-2 ring-white ring-offset-1 ring-offset-[#0a0c10] z-50",
             !isSelected && selectedTrainNumber && "opacity-45"
           )}
           onClick={(e) => {
@@ -185,7 +185,7 @@ export default function TrainMap({
           
           {/* Always show badge if selected */}
           {isSelected && (
-            <div className="absolute top-5 left-1/2 -translate-x-1/2 bg-zinc-900/95 text-zinc-200 text-[9px] font-mono px-1.5 py-0.2 rounded border border-zinc-700 whitespace-nowrap shadow-sm pointer-events-none">
+            <div className="absolute top-5 left-1/2 -translate-x-1/2 bg-[#12151c]/95 text-[#e8eaf0] text-[9px] font-mono px-1.5 py-0.2 rounded border border-[#2f3749] whitespace-nowrap shadow-sm pointer-events-none">
               #{train.trainNumber}
             </div>
           )}
@@ -211,17 +211,17 @@ export default function TrainMap({
   }, [trains, selectedTrainNumber, theme, onSelectTrain]);
 
   return (
-    <div className="app-card p-4">
+    <div className="nr-card p-4">
       {/* Map Control Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-3 border-b border-zinc-800/80 pb-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-3 border-b border-[var(--nr-border)] pb-2.5">
         <div className="flex items-center gap-2">
-          <Radio className="w-4 h-4 text-sky-400" />
+          <Radio className="w-4 h-4 text-[var(--nr-accent)]" />
           <div>
-            <h3 className="text-xs font-semibold text-zinc-100">
-              Corridor Network & Real-Time Fleet Position
+            <h3 className="text-[13px] font-semibold text-[var(--nr-text)]">
+              Network Map
             </h3>
-            <p className="text-[11px] text-zinc-400">
-              National trunk interlocking grid with live train occupancy
+            <p className="text-[11px] text-[var(--nr-text-muted)]">
+              Live fleet position on trunk corridors
             </p>
           </div>
         </div>
@@ -230,39 +230,39 @@ export default function TrainMap({
         <div className="flex items-center gap-3 text-[11px]">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span className="text-zinc-400">On Time</span>
+            <span className="text-[var(--nr-text-muted)]">On Time</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-amber-500" />
-            <span className="text-zinc-400">Slight Delay</span>
+            <span className="text-[var(--nr-text-muted)]">Delayed</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-rose-500" />
-            <span className="text-zinc-400">Severe Delay</span>
+            <span className="text-[var(--nr-text-muted)]">Severe</span>
           </div>
         </div>
       </div>
 
       {/* Map Container */}
-      <div className="relative w-full h-[440px] bg-zinc-950 rounded-lg border border-zinc-800/80 overflow-hidden select-none">
+      <div className="relative w-full h-[440px] bg-[var(--nr-bg)] rounded-md border border-[var(--nr-border)] overflow-hidden select-none">
         <div ref={mapRef} className="w-full h-full" />
 
         {/* Docked Inspection Tooltip (Bottom Left) */}
         {displayedTrain && (
-          <div className="absolute bottom-3 left-3 app-card p-3 z-[1000] max-w-xs shadow-md border-zinc-700/80 pointer-events-none bg-zinc-950/90 backdrop-blur">
+          <div className="absolute bottom-3 left-3 nr-card p-3 z-[1000] max-w-xs shadow-md pointer-events-none bg-[var(--nr-surface)]/95 backdrop-blur">
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between gap-3 border-b border-zinc-800/80 pb-1.5">
+              <div className="flex items-center justify-between gap-3 border-b border-[var(--nr-border)] pb-1.5">
                 <div className="flex items-center gap-1.5 font-mono">
-                  <span className="text-xs font-bold text-sky-400">
+                  <span className="text-[12px] font-bold text-[var(--nr-accent)]">
                     #{displayedTrain.trainNumber}
                   </span>
-                  <span className="text-[10px] px-1 py-0.2 rounded bg-zinc-800 text-zinc-400">
+                  <span className="text-[10px] px-1 py-0.5 rounded bg-[var(--nr-surface-raised)] text-[var(--nr-text-muted)]">
                     {displayedTrain.locoType?.split(" ")[0] || "WAP-7"}
                   </span>
                 </div>
                 <span
                   className={cn(
-                    "text-[10px] px-1.5 py-0.2 rounded font-medium border",
+                    "text-[10px] px-1.5 py-0.5 rounded font-medium border",
                     getStatusBg(displayedTrain.status)
                   )}
                 >
@@ -270,21 +270,21 @@ export default function TrainMap({
                 </span>
               </div>
 
-              <div className="text-xs font-medium text-zinc-100 truncate">
+              <div className="text-[12px] font-medium text-[var(--nr-text)] truncate">
                 {displayedTrain.trainName}
               </div>
 
-              <div className="grid grid-cols-2 gap-1.5 pt-1 text-[10px] font-mono text-zinc-400">
+              <div className="grid grid-cols-2 gap-1.5 pt-1 text-[10px] font-mono text-[var(--nr-text-secondary)]">
                 <div className="flex items-center gap-1">
-                  <Gauge className="w-3 h-3 text-zinc-500" />
+                  <Gauge className="w-3 h-3 text-[var(--nr-text-muted)]" />
                   <span>{displayedTrain.speed} km/h</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-zinc-500" />
+                  <Clock className="w-3 h-3 text-[var(--nr-text-muted)]" />
                   <span>{formatDelay(displayedTrain.currentDelay)}</span>
                 </div>
-                <div className="flex items-center gap-1 col-span-2 text-zinc-500 truncate">
-                  <MapPin className="w-3 h-3 text-zinc-500 shrink-0" />
+                <div className="flex items-center gap-1 col-span-2 text-[var(--nr-text-muted)] truncate">
+                  <MapPin className="w-3 h-3 text-[var(--nr-text-muted)] shrink-0" />
                   <span>{displayedTrain.currentStationCode} → {displayedTrain.nextStationCode} ({displayedTrain.blockOccupancy || "Main"})</span>
                 </div>
               </div>

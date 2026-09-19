@@ -1,17 +1,12 @@
 import { useEffect, useRef } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
-import { ArrowRight, Activity, MapPin } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { ArrowRight, Activity, Train } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
 export function HeroSection() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const { scrollY } = useScroll()
-  
-  // Parallax effects
-  const textY = useTransform(scrollY, [0, 800], [0, 250])
-  const opacity = useTransform(scrollY, [0, 400], [1, 0])
 
-  // Canvas 3D Railway logic
+  // Canvas railway grid
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -29,90 +24,69 @@ export function HeroSection() {
     window.addEventListener('resize', resize)
     resize()
 
-    const drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number, time: number) => {
+    const render = () => {
+      time++
+      const { width, height } = canvas
       ctx.clearRect(0, 0, width, height)
-      
-      const cx = width / 2
-      const cy = height * 0.4 // Horizon line slightly above center
-      
-      // Horizon fade gradient
+
+      // Background
       const bgGrad = ctx.createLinearGradient(0, 0, 0, height)
-      bgGrad.addColorStop(0, '#050608')
-      bgGrad.addColorStop(cy / height, '#080a0f')
-      bgGrad.addColorStop(1, '#050608')
+      bgGrad.addColorStop(0, '#0a0c10')
+      bgGrad.addColorStop(0.4, '#0d1017')
+      bgGrad.addColorStop(1, '#0a0c10')
       ctx.fillStyle = bgGrad
       ctx.fillRect(0, 0, width, height)
+
+      const cx = width / 2
+      const cy = height * 0.4
+      const fov = 300
 
       ctx.save()
       ctx.translate(cx, cy)
 
-      // Perspective projection parameters
-      const fov = 300
-      const lines = 12
-      const spread = 2000
-      
-      // Draw receding tracks
-      ctx.beginPath()
-      for (let i = -lines; i <= lines; i++) {
-        const x = (i * spread) / lines
-        // Bottom screen intersection
-        const z = 800
-        const scale = fov / (fov + z)
-        const bx = x * scale
-        const by = z * scale * 2 // exaggerated depth
-
+      // Receding track lines
+      for (let i = -10; i <= 10; i++) {
+        const x = (i * 2000) / 10
+        const scale = fov / (fov + 800)
+        ctx.beginPath()
         ctx.moveTo(0, 0)
-        ctx.lineTo(bx, by)
-      }
-      ctx.strokeStyle = 'rgba(74, 163, 232, 0.05)'
-      ctx.lineWidth = 1
-      ctx.stroke()
-
-      // Moving sleepers (horizontal lines)
-      ctx.beginPath()
-      const speed = 2
-      const sleeperSpacing = 50
-      const offset = (time * speed) % sleeperSpacing
-
-      for (let z = 10; z < 800; z += sleeperSpacing) {
-        const actualZ = z - offset
-        if (actualZ < 1) continue // past camera
-
-        const scale = fov / (fov + actualZ)
-        const y = actualZ * scale * 2
-        const w = spread * scale
-        
-        // fade in distance
-        const alpha = Math.max(0, 1 - (actualZ / 800)) * 0.15
-
-        ctx.moveTo(-w, y)
-        ctx.lineTo(w, y)
-        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`
+        ctx.lineTo(x * scale, 800 * scale * 2)
+        ctx.strokeStyle = 'rgba(59, 130, 196, 0.04)'
+        ctx.lineWidth = 1
         ctx.stroke()
       }
 
-      // Train representation (glow moving away)
-      const trainZ = 400 + Math.sin(time * 0.005) * 100 // oscillating depth
+      // Moving sleepers
+      const offset = (time * 2) % 50
+      for (let z = 10; z < 800; z += 50) {
+        const actualZ = z - offset
+        if (actualZ < 1) continue
+        const scale = fov / (fov + actualZ)
+        const y = actualZ * scale * 2
+        const w = 2000 * scale
+        const alpha = Math.max(0, 1 - (actualZ / 800)) * 0.08
+        ctx.beginPath()
+        ctx.moveTo(-w, y)
+        ctx.lineTo(w, y)
+        ctx.strokeStyle = `rgba(232, 234, 240, ${alpha})`
+        ctx.stroke()
+      }
+
+      // Train glow
+      const trainZ = 400 + Math.sin(time * 0.005) * 100
       const trainScale = fov / (fov + trainZ)
       const ty = trainZ * trainScale * 2
-
-      const glow = ctx.createRadialGradient(0, ty, 0, 0, ty, 100 * trainScale)
-      glow.addColorStop(0, 'rgba(74, 163, 232, 0.4)')
-      glow.addColorStop(1, 'rgba(74, 163, 232, 0)')
-      
+      const glow = ctx.createRadialGradient(0, ty, 0, 0, ty, 80 * trainScale)
+      glow.addColorStop(0, 'rgba(59, 130, 196, 0.3)')
+      glow.addColorStop(1, 'rgba(59, 130, 196, 0)')
       ctx.fillStyle = glow
-      ctx.fillRect(-200, ty - 100, 400, 200)
+      ctx.fillRect(-150, ty - 80, 300, 160)
 
-      // Train core
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
-      ctx.fillRect(-15 * trainScale, ty - 10 * trainScale, 30 * trainScale, 20 * trainScale)
+      ctx.fillStyle = 'rgba(232, 234, 240, 0.7)'
+      ctx.fillRect(-12 * trainScale, ty - 8 * trainScale, 24 * trainScale, 16 * trainScale)
 
       ctx.restore()
-    }
 
-    const render = () => {
-      time++
-      drawGrid(ctx, canvas.width, canvas.height, time)
       animationFrameId = requestAnimationFrame(render)
     }
     
@@ -125,92 +99,66 @@ export function HeroSection() {
   }, [])
 
   return (
-    <section className="relative h-screen min-h-[800px] w-full overflow-hidden bg-[#050608]">
-      {/* 3D Canvas Background */}
+    <section className="relative h-screen min-h-[700px] w-full overflow-hidden bg-bg">
+      {/* Canvas */}
       <div className="absolute inset-0 z-0">
         <canvas 
           ref={canvasRef} 
-          className="h-full w-full opacity-60 mix-blend-screen"
+          className="h-full w-full opacity-50 mix-blend-screen"
         />
-        {/* Vignette/Gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050608] via-transparent to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#050608] via-transparent to-[#050608]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-bg/60 via-transparent to-bg/60" />
       </div>
 
       {/* Content */}
-      <motion.div 
-        style={{ y: textY, opacity }}
-        className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-6 text-center"
-      >
+      <div className="relative z-10 mx-auto flex h-full max-w-5xl flex-col items-center justify-center px-6 text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
-          <h1 className="mb-6 font-mono text-sm tracking-[0.2em] text-[#4aa3e8]">
-            NEXRAIL AI
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 backdrop-blur-sm px-4 py-1.5 mb-6">
+            <Train className="h-3.5 w-3.5 text-accent" />
+            <span className="text-[12px] font-medium text-muted">AI-Powered Railway Intelligence</span>
+          </div>
+
+          <h1 className="mb-5 text-4xl font-semibold tracking-tight text-ink md:text-6xl lg:text-7xl">
+            Know Your Train's<br />
+            <span className="text-muted">Arrival Before It Does.</span>
           </h1>
-          <h2 className="mb-6 text-5xl font-medium tracking-tight text-white md:text-7xl lg:text-8xl">
-            Predict the Journey.<br />
-            <span className="text-white/50">Before It Happens.</span>
-          </h2>
-          <p className="mx-auto mb-10 max-w-2xl text-lg text-white/40 md:text-xl">
-            AI-powered railway intelligence for faster, safer, and more predictable journeys.
+
+          <p className="mx-auto mb-8 max-w-xl text-[15px] leading-relaxed text-muted md:text-base">
+            Real-time AI predictions for Indian Railways. Track delays, explore 
+            what-if scenarios, and get intelligent journey insights.
           </p>
           
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
             <NavLink
               to="/search"
-              className="group flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-medium text-black transition-all hover:bg-white/90"
+              className="group flex items-center gap-2 rounded-md bg-accent px-6 py-2.5 text-[13px] font-medium text-white transition-all hover:bg-accent/90"
             >
-              Explore NexRail
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              Track a Train
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
             </NavLink>
             <a
-              href="#intelligence"
-              className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-6 py-3 text-sm font-medium text-white transition-all hover:bg-white/10"
+              href="#features"
+              className="flex items-center gap-2 rounded-md border border-border bg-surface/50 backdrop-blur-sm px-6 py-2.5 text-[13px] font-medium text-ink transition-all hover:bg-surface"
             >
-              <Activity className="h-4 w-4" />
-              Live Intelligence
+              <Activity className="h-3.5 w-3.5 text-accent" />
+              How It Works
             </a>
           </div>
         </motion.div>
+      </div>
 
-        {/* Telemetry Overlays (Absolute positioned around the hero) */}
-        <motion.div 
-          className="absolute left-10 top-1/3 hidden rounded-lg border border-white/10 bg-black/40 px-4 py-3 backdrop-blur-md md:block"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-        >
-          <div className="mb-1 text-[10px] font-mono text-white/50 uppercase tracking-wider">Delay Risk</div>
-          <div className="text-xl font-medium text-emerald-400">18% <span className="text-sm text-emerald-400/50">Low</span></div>
-        </motion.div>
-
-        <motion.div 
-          className="absolute right-10 top-1/2 hidden rounded-lg border border-white/10 bg-black/40 px-4 py-3 backdrop-blur-md md:block"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.7, duration: 0.8 }}
-        >
-          <div className="mb-1 text-[10px] font-mono text-white/50 uppercase tracking-wider">Next Station</div>
-          <div className="flex items-center gap-2 text-sm text-white">
-            <MapPin className="h-3 w-3 text-[#4aa3e8]" />
-            Ahmedabad (ADI)
-          </div>
-          <div className="mt-1 text-xs text-white/40">ETA +04 min</div>
-        </motion.div>
-
-      </motion.div>
-
-      {/* Bottom Trust Indicators */}
-      <div className="absolute bottom-0 left-0 w-full border-t border-white/5 bg-black/20 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-center gap-8 px-6 py-4 text-xs font-mono uppercase tracking-widest text-white/30 md:gap-16">
-          <span>Live Train Intelligence</span>
+      {/* Bottom strip */}
+      <div className="absolute bottom-0 left-0 w-full border-t border-border/30 bg-bg/60 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-5xl items-center justify-center gap-8 px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-muted/50 md:gap-16">
+          <span>Live ETA Predictions</span>
           <span className="hidden md:inline">·</span>
-          <span>AI ETA Engine</span>
+          <span>ML-Powered Intelligence</span>
           <span className="hidden md:inline">·</span>
-          <span className="hidden sm:inline">Decision Intelligence</span>
+          <span className="hidden sm:inline">Journey Analytics</span>
         </div>
       </div>
     </section>

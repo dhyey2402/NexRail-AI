@@ -23,30 +23,31 @@ export function EtaCard({ train, prediction, now }: EtaCardProps) {
     <Card className="border-accent/20 bg-linear-to-b from-accent-soft/40 to-surface">
       <CardHeader>
         <div>
-          <CardTitle>AI predicted arrival</CardTitle>
+          <CardTitle>AI Predicted Arrival</CardTitle>
           <CardHint>
             {train.destination ? `Destination · ${train.destination}` : `Train ${train.number}`}
           </CardHint>
         </div>
-        <span className="rounded-full bg-accent-soft px-2 py-1 text-[11px] font-medium text-accent">
+        <span className="rounded-md bg-accent-soft px-2 py-0.5 text-[10px] font-semibold text-accent flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
           Live
         </span>
       </CardHeader>
 
-      <p className="text-[40px] font-semibold leading-none tracking-tight text-ink">
+      <p className="text-[36px] font-bold leading-none tracking-tight text-ink font-mono">
         {prediction.predictedEta}
       </p>
-      <p className="mt-2 text-sm text-muted">
+      <p className="mt-2 text-[13px] text-muted">
         <span className={`font-medium ${delayTone}`}>
-          {prediction.predictedDelayMin <= 0 ? 'On time' : `+${prediction.predictedDelayMin} min destination delay`}
+          {prediction.predictedDelayMin <= 0 ? 'On time' : `+${prediction.predictedDelayMin} min delay`}
         </span>
       </p>
 
-      <div className="mt-5">
+      <div className="mt-4">
         <ConfidenceMeter value={prediction.confidence} />
       </div>
-      <p className="mt-3 text-xs text-faint">
-        Last updated {lastUpdatedAgo}s ago
+      <p className="mt-2.5 text-[11px] text-faint font-mono">
+        Updated {lastUpdatedAgo}s ago
       </p>
     </Card>
   )

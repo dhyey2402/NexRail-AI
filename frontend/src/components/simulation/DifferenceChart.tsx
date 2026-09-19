@@ -31,68 +31,68 @@ export default function DifferenceChart({ result }: DifferenceChartProps) {
   });
 
   return (
-    <div className="app-card p-4">
+    <div className="nr-card p-4">
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div>
-          <h4 className="text-xs font-semibold text-zinc-100">Delay Propagation Along Corridor</h4>
-          <p className="text-[11px] text-zinc-400 mt-0.5">
-            Estimated delay progression from current block to destination
+          <h4 className="text-[13px] font-semibold text-[var(--nr-text)]">Delay Propagation</h4>
+          <p className="text-[11px] text-[var(--nr-text-muted)] mt-0.5">
+            Estimated delay progression along corridor
           </p>
         </div>
-        <div className="flex items-center gap-3 text-xs">
+        <div className="flex items-center gap-3 text-[11px]">
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm bg-zinc-600 inline-block" />
-            <span className="text-zinc-400 text-[11px]">Baseline</span>
+            <span className="w-2.5 h-2.5 rounded-sm bg-[#5c657a] inline-block" />
+            <span className="text-[var(--nr-text-muted)]">Baseline</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm bg-sky-500 inline-block" />
-            <span className="text-sky-400 text-[11px] font-medium">Simulated Scenario</span>
+            <span className="w-2.5 h-2.5 rounded-sm bg-[var(--nr-accent)] inline-block" />
+            <span className="text-[var(--nr-accent)]">Simulated</span>
           </div>
         </div>
       </div>
 
-      <div className="h-[220px] w-full">
+      <div className="h-[200px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="colorSimulated" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#0284c7" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#0284c7" stopOpacity={0.0} />
+                <stop offset="5%" stopColor="#3b82c4" stopOpacity={0.25} />
+                <stop offset="95%" stopColor="#3b82c4" stopOpacity={0.0} />
               </linearGradient>
               <linearGradient id="colorBaseline" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#71717a" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#71717a" stopOpacity={0.0} />
+                <stop offset="5%" stopColor="#5c657a" stopOpacity={0.15} />
+                <stop offset="95%" stopColor="#5c657a" stopOpacity={0.0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="2 2" stroke="#27272a" vertical={false} />
+            <CartesianGrid strokeDasharray="2 2" stroke="#232938" vertical={false} />
             <XAxis
               dataKey="station"
-              stroke="#71717a"
+              stroke="#5c657a"
               fontSize={10}
               tickLine={false}
-              axisLine={{ stroke: "#3f3f46" }}
+              axisLine={{ stroke: "#2f3749" }}
             />
             <YAxis
-              stroke="#71717a"
+              stroke="#5c657a"
               fontSize={10}
               tickLine={false}
-              axisLine={{ stroke: "#3f3f46" }}
+              axisLine={{ stroke: "#2f3749" }}
               unit="m"
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#18181b",
-                borderColor: "#3f3f46",
-                borderRadius: "8px",
+                backgroundColor: "#12151c",
+                borderColor: "#2f3749",
+                borderRadius: "6px",
                 fontSize: "11px",
-                color: "#f4f4f5",
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.5)",
+                color: "#e8eaf0",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4)",
               }}
             />
             <Area
               type="monotone"
               dataKey="Baseline Delay"
-              stroke="#71717a"
+              stroke="#5c657a"
               strokeWidth={1.5}
               fillOpacity={1}
               fill="url(#colorBaseline)"
@@ -100,7 +100,7 @@ export default function DifferenceChart({ result }: DifferenceChartProps) {
             <Area
               type="monotone"
               dataKey="Simulated Delay"
-              stroke="#0284c7"
+              stroke="#3b82c4"
               strokeWidth={2}
               fillOpacity={1}
               fill="url(#colorSimulated)"

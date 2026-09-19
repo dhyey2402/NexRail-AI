@@ -29,7 +29,6 @@ export default function LiveMonitor() {
     loadTrains();
   }, []);
 
-  // Filter trains
   const filteredTrains = trains.filter((t) => {
     const matchesSearch =
       t.trainNumber.includes(searchQuery) ||
@@ -58,129 +57,102 @@ export default function LiveMonitor() {
 
   return (
     <div className="space-y-4">
-      {/* Top Filter and Search Control Bar */}
-      <div className="app-card p-3 flex flex-col md:flex-row items-center justify-between gap-3">
-        {/* Search */}
-        <div className="relative w-full md:w-72">
-          <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-2.5" />
+      {/* Filters */}
+      <div className="nr-card p-3 flex flex-col md:flex-row items-center justify-between gap-3">
+        <div className="relative w-full md:w-64">
+          <Search className="w-3.5 h-3.5 text-[var(--nr-text-muted)] absolute left-3 top-2.5" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Filter train # or station..."
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-500 outline-none focus:border-zinc-700 transition-colors"
+            placeholder="Filter by train # or station..."
+            className="w-full bg-[var(--nr-bg)] border border-[var(--nr-border)] rounded-md pl-8 pr-3 py-1.5 text-[12px] text-[var(--nr-text)] placeholder:text-[var(--nr-text-faint)] outline-none focus:border-[var(--nr-accent)] transition-colors"
           />
         </div>
 
-        {/* Filter Pills */}
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-          {/* Status buttons */}
-          <div className="bg-zinc-900 p-0.5 rounded-lg border border-zinc-800 flex items-center gap-0.5">
-            <button
-              onClick={() => setStatusFilter("all")}
-              className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-                statusFilter === "all"
-                  ? "bg-zinc-100 text-zinc-950 font-semibold"
-                  : "text-zinc-400 hover:text-zinc-200"
-              }`}
-            >
-              All ({trains.length})
-            </button>
-            <button
-              onClick={() => setStatusFilter("on-time")}
-              className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-                statusFilter === "on-time"
-                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold"
-                  : "text-zinc-400 hover:text-zinc-200"
-              }`}
-            >
-              On-Time
-            </button>
-            <button
-              onClick={() => setStatusFilter("delayed")}
-              className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-                statusFilter === "delayed"
-                  ? "bg-amber-500/20 text-amber-400 border border-amber-500/30 font-semibold"
-                  : "text-zinc-400 hover:text-zinc-200"
-              }`}
-            >
-              Delayed
-            </button>
-            <button
-              onClick={() => setStatusFilter("severe")}
-              className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-                statusFilter === "severe"
-                  ? "bg-rose-500/20 text-rose-400 border border-rose-500/30 font-semibold"
-                  : "text-zinc-400 hover:text-zinc-200"
-              }`}
-            >
-              Severe (&gt;45m)
-            </button>
+          <div className="bg-[var(--nr-bg)] p-0.5 rounded-md border border-[var(--nr-border)] flex items-center gap-0.5">
+            {[
+              { key: "all", label: `All (${trains.length})` },
+              { key: "on-time", label: "On-Time" },
+              { key: "delayed", label: "Delayed" },
+              { key: "severe", label: "Severe" },
+            ].map((btn) => (
+              <button
+                key={btn.key}
+                onClick={() => setStatusFilter(btn.key)}
+                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
+                  statusFilter === btn.key
+                    ? "bg-[var(--nr-accent-muted)] text-[var(--nr-accent)] font-semibold"
+                    : "text-[var(--nr-text-muted)] hover:text-[var(--nr-text)]"
+                }`}
+              >
+                {btn.label}
+              </button>
+            ))}
           </div>
 
-          {/* Zone Selector */}
           <select
             value={zoneFilter}
             onChange={(e) => setZoneFilter(e.target.value)}
-            className="bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1 text-xs text-zinc-300 outline-none cursor-pointer"
+            className="bg-[var(--nr-bg)] border border-[var(--nr-border)] rounded-md px-2.5 py-1 text-[12px] text-[var(--nr-text-secondary)] outline-none cursor-pointer"
           >
             <option value="all">All Zones</option>
             {zones.map((z) => (
               <option key={z || "unknown"} value={z || ""}>
-                Zone {z || "Unknown"}
+                {z || "Unknown"}
               </option>
             ))}
           </select>
 
-          {/* Refresh button */}
           <button
             onClick={loadTrains}
             disabled={isRefreshing}
-            className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 transition-colors"
-            title="Refresh fleet feed"
+            className="p-1.5 rounded-md bg-[var(--nr-surface-raised)] border border-[var(--nr-border)] text-[var(--nr-text-muted)] hover:text-[var(--nr-text)] transition-colors"
+            title="Refresh"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-sky-400" : ""}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-[var(--nr-accent)]" : ""}`} />
           </button>
         </div>
       </div>
 
-      {/* Network Topology Map */}
+      {/* Map */}
       <TrainMap
         trains={filteredTrains}
         selectedTrainNumber={selectedTrainNumber}
         onSelectTrain={(t) => setSelectedTrainNumber(t.trainNumber)}
       />
 
-      {/* Train Cards Fleet Grid */}
-      <div className="space-y-2.5">
+      {/* Fleet Grid */}
+      <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h3 className="text-xs font-semibold text-zinc-100">
-            Monitored Fleet Stream ({filteredTrains.length} active)
+          <h3 className="text-[13px] font-semibold text-[var(--nr-text)]">
+            Active Fleet ({filteredTrains.length})
           </h3>
-          <span className="text-[11px] text-zinc-500">
-            Click any service to inspect on corridor map
+          <span className="text-[11px] text-[var(--nr-text-muted)]">
+            Click to select on map
           </span>
         </div>
 
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 animate-pulse">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-32 bg-zinc-900/60 rounded-xl border border-zinc-800" />
+              <div key={i} className="h-28 nr-card" />
             ))}
           </div>
         ) : filteredTrains.length === 0 ? (
-          <div className="p-8 text-center bg-zinc-900/40 rounded-xl border border-zinc-800 text-xs text-zinc-500">
-            No active trains match the selected filters.
+          <div className="p-6 text-center nr-card text-[12px] text-[var(--nr-text-muted)]">
+            No trains match the selected filters.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
             {filteredTrains.map((train) => (
               <div
                 key={train.trainNumber}
                 onClick={() => setSelectedTrainNumber(train.trainNumber)}
-                className={`cursor-pointer transition-all ${
+                className={`cursor-pointer transition-all rounded-md ${
                   selectedTrainNumber === train.trainNumber
-                    ? "ring-1 ring-sky-500/80 rounded-xl bg-zinc-900/90"
+                    ? "ring-1 ring-[var(--nr-accent)]/60"
                     : ""
                 }`}
               >

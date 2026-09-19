@@ -2,32 +2,39 @@
 @import "tw-animate-css";
 @import "leaflet/dist/leaflet.css";
 
+/* ════════════════════════════════════════════════════
+   NexRail AI — Passenger Frontend Design Tokens
+   ════════════════════════════════════════════════════ */
+
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 
-  --color-bg: #08090b;
-  --color-surface: #111318;
-  --color-surface-2: #171a21;
-  --color-border: #252a33;
-  --color-border-strong: #323845;
+  /* ── Surface & Background ─────────────────────── */
+  --color-bg: #0a0c10;
+  --color-surface: #12151c;
+  --color-surface-2: #1a1e28;
+  --color-border: #232938;
+  --color-border-strong: #2f3749;
 
-  --color-ink: #f4f6f8;
-  --color-muted: #8b939e;
-  --color-faint: #5c6570;
+  /* ── Typography ────────────────────────────────── */
+  --color-ink: #e8eaf0;
+  --color-muted: #8b93a5;
+  --color-faint: #5c657a;
 
-  --color-accent: #4aa3e8;
-  --color-accent-2: #3d8fd4;
-  --color-accent-soft: rgba(74, 163, 232, 0.12);
+  /* ── Accent & Status ───────────────────────────── */
+  --color-accent: #3b82c4;
+  --color-accent-2: #2b6fad;
+  --color-accent-soft: rgba(59, 130, 196, 0.12);
 
-  --color-ok: #3dba7a;
-  --color-ok-soft: rgba(61, 186, 122, 0.12);
-  --color-warn: #d8a23a;
-  --color-warn-soft: rgba(216, 162, 58, 0.12);
-  --color-danger: #e05a4f;
-  --color-danger-soft: rgba(224, 90, 79, 0.12);
+  --color-ok: #2d9c6f;
+  --color-ok-soft: rgba(45, 156, 111, 0.12);
+  --color-warn: #c58f2a;
+  --color-warn-soft: rgba(197, 143, 42, 0.12);
+  --color-danger: #c44a3e;
+  --color-danger-soft: rgba(196, 74, 62, 0.12);
 
-  --radius-md: 10px;
-  --radius-lg: 14px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
 }
 
 html,
@@ -41,13 +48,20 @@ body {
   background: var(--color-bg);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code, pre, .font-mono {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 * {
   border-color: var(--color-border);
 }
 
+/* ── Leaflet Map — Dark Operational Mode ──────────── */
 .leaflet-container {
   background: #0e1116;
   font-family: var(--font-sans);
@@ -58,33 +72,58 @@ body {
 }
 
 .leaflet-control-attribution {
-  background: rgba(8, 9, 11, 0.8) !important;
-  color: #8b939e !important;
+  background: rgba(10, 12, 16, 0.85) !important;
+  color: #8b93a5 !important;
   font-size: 10px !important;
+}
+
+/* ── Scrollbar ────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-faint);
+}
+
+/* ── Selection ────────────────────────────────────── */
+::selection {
+  background: rgba(59, 130, 196, 0.3);
+  color: #fff;
 }
 
 /* ── Light theme overrides ─────────────────────────── */
 [data-theme="light"] {
-  --color-bg: #f5f6f8;
+  --color-bg: #f3f4f7;
   --color-surface: #ffffff;
-  --color-surface-2: #eef0f4;
-  --color-border: #dde1e8;
-  --color-border-strong: #c5cbd6;
+  --color-surface-2: #f0f1f5;
+  --color-border: #dfe2ea;
+  --color-border-strong: #c8cdd8;
 
-  --color-ink: #111318;
-  --color-muted: #5c6570;
-  --color-faint: #8b939e;
+  --color-ink: #111827;
+  --color-muted: #5c657a;
+  --color-faint: #8b93a5;
 
-  --color-accent: #2b7fc7;
-  --color-accent-2: #2570b0;
-  --color-accent-soft: rgba(43, 127, 199, 0.10);
+  --color-accent: #2b6fad;
+  --color-accent-2: #245f96;
+  --color-accent-soft: rgba(43, 111, 173, 0.08);
 
-  --color-ok: #1a8f55;
-  --color-ok-soft: rgba(26, 143, 85, 0.10);
-  --color-warn: #b5841e;
-  --color-warn-soft: rgba(181, 132, 30, 0.10);
-  --color-danger: #c4382e;
-  --color-danger-soft: rgba(196, 56, 46, 0.10);
+  --color-ok: #1a8a5c;
+  --color-ok-soft: rgba(26, 138, 92, 0.08);
+  --color-warn: #a87a1e;
+  --color-warn-soft: rgba(168, 122, 30, 0.08);
+  --color-danger: #b33d32;
+  --color-danger-soft: rgba(179, 61, 50, 0.08);
 }
 
 [data-theme="light"] .leaflet-layer {
@@ -97,5 +136,5 @@ body {
 
 [data-theme="light"] .leaflet-control-attribution {
   background: rgba(255, 255, 255, 0.85) !important;
-  color: #5c6570 !important;
+  color: #5c657a !important;
 }

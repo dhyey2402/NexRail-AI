@@ -92,7 +92,7 @@ export function WhatIfPanel({ train, prediction }: WhatIfPanelProps) {
 
         {result && (
           <div className="mt-6 animate-in slide-in-from-bottom-2 fade-in duration-300">
-            <div className="rounded-[14px] border border-accent/20 bg-accent/5 p-5">
+            <div className="rounded-md border border-accent/20 bg-accent/5 p-4">
               <div className="flex items-start gap-4">
                 <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10">
                   <Calculator className="h-4 w-4 text-accent" />

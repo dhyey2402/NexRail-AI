@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { TrainFront } from 'lucide-react'
+import { Train } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
 export function LandingNav() {
@@ -16,13 +16,13 @@ export function LandingNav() {
   const navBg = useTransform(
     scrollY,
     [0, 100],
-    ['rgba(5, 6, 8, 0)', 'rgba(5, 6, 8, 0.85)']
+    ['rgba(10, 12, 16, 0)', 'rgba(10, 12, 16, 0.9)']
   )
 
   const navBorder = useTransform(
     scrollY,
     [0, 100],
-    ['rgba(255, 255, 255, 0)', 'rgba(255, 255, 255, 0.08)']
+    ['rgba(35, 41, 56, 0)', 'rgba(35, 41, 56, 0.6)']
   )
 
   return (
@@ -31,30 +31,27 @@ export function LandingNav() {
         backgroundColor: navBg,
         borderColor: navBorder,
       }}
-      className="fixed top-0 z-50 w-full border-b backdrop-blur-md transition-all"
+      className="fixed top-0 z-50 w-full border-b backdrop-blur-sm transition-all"
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <div className="flex items-center gap-3 text-white">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 shadow-inner">
-            <TrainFront className="h-4 w-4 text-[#4aa3e8]" />
+      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
+        <div className="flex items-center gap-2.5 text-ink">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-accent">
+            <Train className="h-3.5 w-3.5 text-white" />
           </div>
-          <span className="font-semibold tracking-tight text-white/90">NexRail AI</span>
+          <span className="text-[13px] font-semibold tracking-tight text-ink/90">NexRail AI</span>
         </div>
 
-        <nav className="hidden items-center gap-8 md:flex">
-          <a href="#intelligence" className="text-sm text-white/60 transition-colors hover:text-white">Intelligence</a>
-          <a href="#capabilities" className="text-sm text-white/60 transition-colors hover:text-white">Capabilities</a>
-          <a href="#how-it-works" className="text-sm text-white/60 transition-colors hover:text-white">How It Works</a>
+        <nav className="hidden items-center gap-6 md:flex">
+          <a href="#features" className="text-[13px] text-muted transition-colors hover:text-ink">Features</a>
+          <a href="#how-it-works" className="text-[13px] text-muted transition-colors hover:text-ink">How It Works</a>
         </nav>
 
-        <div className="flex items-center gap-4">
-          <NavLink
-            to="/search"
-            className="group relative overflow-hidden rounded-full bg-white px-5 py-2 text-sm font-medium text-black transition-all hover:bg-white/90 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
-          >
-            Launch NexRail
-          </NavLink>
-        </div>
+        <NavLink
+          to="/search"
+          className="rounded-md bg-accent px-4 py-1.5 text-[12px] font-medium text-white transition-all hover:bg-accent/90"
+        >
+          Track a Train
+        </NavLink>
       </div>
     </motion.header>
   )

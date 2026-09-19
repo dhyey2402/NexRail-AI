@@ -21,7 +21,6 @@ import { TRAIN_STATUS, type Prediction, type TrainLive, type WeatherInfo } from 
 
 const RouteMap = lazy(() => import('@/components/route/RouteMap'))
 
-
 const POLL_INTERVAL_MS = 30_000
 
 export function TrainStatusPage() {
@@ -58,12 +57,10 @@ export function TrainStatusPage() {
     }
   }, [id])
 
-  // Initial load
   useEffect(() => {
     void load(true)
   }, [load])
 
-  // Periodic refresh from backend (no fake physics)
   useEffect(() => {
     const interval = setInterval(() => void load(false), POLL_INTERVAL_MS)
     return () => clearInterval(interval)
@@ -97,23 +94,27 @@ export function TrainStatusPage() {
     train.status === TRAIN_STATUS.DELAYED ? 'danger' : train.status === TRAIN_STATUS.SLIGHT_DELAY ? 'warn' : 'ok'
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <div className="flex flex-col gap-3 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      {/* Header */}
+      <div className="flex flex-col gap-2 border-b border-border pb-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight">{train.name}</h1>
+            <span className="text-[12px] font-mono font-bold text-accent bg-accent-soft px-2 py-0.5 rounded-md">
+              #{train.number}
+            </span>
+            <h1 className="text-lg font-semibold tracking-tight text-ink">{train.name}</h1>
             <StatusBadge status={train.status} />
           </div>
-          <p className="mt-1 text-sm text-muted">
-            {train.number}
-            {train.type ? ` · ${train.type}` : ''}
-            {train.source && train.destination ? ` · ${train.source} → ${train.destination}` : ''}
+          <p className="mt-1 text-[12px] text-muted">
+            {train.type ? `${train.type} · ` : ''}
+            {train.source && train.destination ? `${train.source} → ${train.destination}` : ''}
           </p>
         </div>
-        <p className="font-mono text-xs text-faint">Live clock {formatClock(new Date(now))}</p>
+        <p className="font-mono text-[11px] text-faint">{formatClock(new Date(now))} IST</p>
       </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Stats */}
+      <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={Clock3}
           label="Current Delay"
@@ -129,7 +130,7 @@ export function TrainStatusPage() {
         />
         <StatCard
           icon={Navigation}
-          label="Next station"
+          label="Next Station"
           value={train.nextStation}
         />
         <StatCard
@@ -139,13 +140,14 @@ export function TrainStatusPage() {
         />
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-5">
-        <div className="grid gap-4 lg:col-span-2">
+      {/* Main Grid */}
+      <div className="mt-4 grid gap-3 lg:grid-cols-5">
+        <div className="grid gap-3 lg:col-span-2">
           <EtaCard train={train} prediction={prediction} now={now} />
           {weather ? (
             <WeatherCard weather={weather} />
           ) : (
-            <div className="rounded-[14px] border border-border bg-surface p-5 text-sm text-muted flex items-center justify-center h-24">
+            <div className="rounded-md border border-border bg-surface p-4 text-[12px] text-muted flex items-center justify-center h-20">
               Weather unavailable
             </div>
           )}
@@ -156,19 +158,21 @@ export function TrainStatusPage() {
         </div>
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-5">
+      {/* Map + Explain */}
+      <div className="mt-3 grid gap-3 lg:grid-cols-5">
         <div className="lg:col-span-3">
-          <Suspense fallback={<div className="h-[380px] rounded-[14px] border border-border bg-surface" />}>
+          <Suspense fallback={<div className="h-[380px] rounded-md border border-border bg-surface" />}>
             <RouteMap train={train} />
           </Suspense>
         </div>
-        <div className="lg:col-span-2 flex flex-col gap-4">
+        <div className="lg:col-span-2 flex flex-col gap-3">
           <RecoveryAdvisorPanel advice={prediction?.recoveryAdvice} />
           <ReasoningPanel prediction={prediction} />
         </div>
       </div>
 
-      <div className="mt-4">
+      {/* Simulation */}
+      <div className="mt-3">
         <WhatIfPanel train={train} prediction={prediction} />
       </div>
     </div>

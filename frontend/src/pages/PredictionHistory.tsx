@@ -41,50 +41,33 @@ export default function PredictionHistory() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", `prediction_history_export_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute("download", `prediction_history_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
   return (
-    <div className="space-y-5">
-      {/* Header Banner */}
-      <div className="app-card p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-              Auditable Log Stream
-            </span>
-          </div>
-          <h1 className="text-lg font-semibold text-zinc-100 tracking-tight">
-            Prediction History & Post-Hoc Verification
-          </h1>
-          <p className="text-xs text-zinc-400 mt-0.5">
-            Historical benchmark log comparing real-time LightGBM ETA inferences with actual physical arrivals.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={handleExportCSV}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 text-xs font-medium transition-colors"
-          >
-            <Download className="w-3.5 h-3.5 text-sky-400" />
-            Export CSV
-          </button>
-          <button
-            onClick={fetchHistory}
-            className="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-800 transition-colors"
-            title="Reload table"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-sky-400" : ""}`} />
-          </button>
-        </div>
+    <div className="space-y-4">
+      {/* Controls */}
+      <div className="flex items-center justify-end gap-2">
+        <button
+          onClick={handleExportCSV}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[var(--nr-surface)] hover:bg-[var(--nr-surface-raised)] text-[var(--nr-text)] border border-[var(--nr-border)] text-[12px] font-medium transition-colors"
+        >
+          <Download className="w-3.5 h-3.5 text-[var(--nr-accent)]" />
+          Export CSV
+        </button>
+        <button
+          onClick={fetchHistory}
+          className="p-1.5 rounded-md bg-[var(--nr-surface)] hover:bg-[var(--nr-surface-raised)] text-[var(--nr-text-muted)] hover:text-[var(--nr-text)] border border-[var(--nr-border)] transition-colors"
+          title="Reload"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-[var(--nr-accent)]" : ""}`} />
+        </button>
       </div>
 
-      {/* Main Table */}
+      {/* Table */}
       <PredictionTable
         data={data}
         total={total}

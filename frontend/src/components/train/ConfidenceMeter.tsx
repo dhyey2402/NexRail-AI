@@ -5,23 +5,23 @@ interface ConfidenceMeterProps {
   size?: number;
 }
 
-export default function ConfidenceMeter({ score, size = 130 }: ConfidenceMeterProps) {
-  const strokeWidth = 7;
+export default function ConfidenceMeter({ score, size = 110 }: ConfidenceMeterProps) {
+  const strokeWidth = 6;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (score / 100) * circumference;
 
   const getColor = () => {
-    if (score >= 90) return { stroke: "#10b981", text: "text-emerald-400", label: "High Confidence" };
-    if (score >= 75) return { stroke: "#f59e0b", text: "text-amber-400", label: "Moderate" };
-    return { stroke: "#f43f5e", text: "text-rose-400", label: "Low Confidence" };
+    if (score >= 90) return { stroke: "var(--nr-success, #2d9c6f)", text: "text-emerald-400", label: "High" };
+    if (score >= 75) return { stroke: "var(--nr-warning, #c58f2a)", text: "text-amber-400", label: "Moderate" };
+    return { stroke: "var(--nr-danger, #c44a3e)", text: "text-rose-400", label: "Low" };
   };
 
   const color = getColor();
 
   return (
-    <div className="app-card p-4">
-      <h3 className="text-xs font-semibold text-zinc-100 mb-3">Model Confidence</h3>
+    <div className="nr-card p-4">
+      <h3 className="text-[13px] font-semibold text-[var(--nr-text)] mb-3">Model Confidence</h3>
 
       <div className="flex flex-col items-center">
         <div className="relative" style={{ width: size, height: size }}>
@@ -31,17 +31,14 @@ export default function ConfidenceMeter({ score, size = 130 }: ConfidenceMeterPr
             viewBox={`0 0 ${size} ${size}`}
             className="-rotate-90"
           >
-            {/* Background circle */}
             <circle
               cx={size / 2}
               cy={size / 2}
               r={radius}
               fill="none"
-              stroke="currentColor"
+              stroke="var(--nr-border, #232938)"
               strokeWidth={strokeWidth}
-              className="text-zinc-800"
             />
-            {/* Progress circle */}
             <circle
               cx={size / 2}
               cy={size / 2}
@@ -56,17 +53,16 @@ export default function ConfidenceMeter({ score, size = 130 }: ConfidenceMeterPr
             />
           </svg>
 
-          {/* Center text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center font-mono">
-            <span className={cn("text-2xl font-bold", color.text)}>
+            <span className={cn("text-xl font-bold", color.text)}>
               {score.toFixed(1)}%
             </span>
-            <span className="text-[10px] text-zinc-500 font-sans mt-0.5">Reliability</span>
+            <span className="text-[10px] text-[var(--nr-text-muted)] font-sans mt-0.5">Reliability</span>
           </div>
         </div>
 
-        <div className="mt-3 text-center">
-          <span className={cn("text-[11px] font-medium px-2 py-0.5 rounded border", 
+        <div className="mt-2.5 text-center">
+          <span className={cn("text-[11px] font-medium px-2 py-0.5 rounded border",
             score >= 90 ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
             score >= 75 ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
             "bg-rose-500/10 text-rose-400 border-rose-500/20"

@@ -17,51 +17,51 @@ export default function TopDelayedTrains({ data }: TopDelayedTrainsProps) {
   const sortedData = [...data].sort((a, b) => b.avgDelay - a.avgDelay).slice(0, 8);
 
   return (
-    <div className="app-card p-4">
+    <div className="nr-card p-4">
       <div className="mb-3">
-        <h3 className="text-xs font-semibold text-zinc-100">Top Delayed Services (7-Day Average)</h3>
-        <p className="text-[11px] text-zinc-400 mt-0.5">
-          Priority bottlenecks requiring operational attention
+        <h3 className="text-[13px] font-semibold text-[var(--nr-text)]">Top Delayed Services</h3>
+        <p className="text-[11px] text-[var(--nr-text-muted)] mt-0.5">
+          7-day average delay ranking
         </p>
       </div>
 
-      <div className="h-[250px] w-full">
+      <div className="h-[230px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={sortedData}
             layout="vertical"
             margin={{ top: 5, right: 20, left: 30, bottom: 5 }}
           >
-            <CartesianGrid strokeDasharray="2 2" stroke="#27272a" horizontal={false} />
+            <CartesianGrid strokeDasharray="2 2" stroke="#232938" horizontal={false} />
             <XAxis
               type="number"
-              stroke="#71717a"
+              stroke="#5c657a"
               fontSize={10}
               tickLine={false}
-              axisLine={{ stroke: "#3f3f46" }}
+              axisLine={{ stroke: "#2f3749" }}
               unit="m"
             />
             <YAxis
               type="category"
               dataKey="train"
-              stroke="#a1a1aa"
+              stroke="#8b93a5"
               fontSize={10}
               tickLine={false}
-              axisLine={{ stroke: "#3f3f46" }}
+              axisLine={{ stroke: "#2f3749" }}
               width={110}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#18181b",
-                borderColor: "#3f3f46",
-                borderRadius: "8px",
+                backgroundColor: "#12151c",
+                borderColor: "#2f3749",
+                borderRadius: "6px",
                 fontSize: "11px",
-                color: "#f4f4f5",
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.5)",
+                color: "#e8eaf0",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4)",
               }}
               formatter={(value, _, entry) => [
-                `${value} mins avg delay (${entry.payload.count} trips)`,
-                "Average Delay",
+                `${value} mins avg (${entry.payload.count} trips)`,
+                "Delay",
               ]}
             />
             <Bar dataKey="avgDelay" radius={[0, 3, 3, 0]}>
@@ -70,10 +70,10 @@ export default function TopDelayedTrains({ data }: TopDelayedTrainsProps) {
                   key={`cell-${index}`}
                   fill={
                     entry.avgDelay >= 50
-                      ? "#f43f5e"
+                      ? "#c44a3e"
                       : entry.avgDelay >= 30
-                        ? "#f97316"
-                        : "#f59e0b"
+                        ? "#d97706"
+                        : "#c58f2a"
                   }
                 />
               ))}

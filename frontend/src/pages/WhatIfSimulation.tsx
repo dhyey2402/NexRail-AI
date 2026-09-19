@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import ScenarioPanel from "../components/simulation/ScenarioPanel";
 import SimulationResult from "../components/simulation/SimulationResult";
 import DifferenceChart from "../components/simulation/DifferenceChart";
@@ -10,7 +10,7 @@ const presetScenarios = [
   {
     name: "Monsoon Downpour",
     tag: "Weather",
-    desc: "Heavy rain + 65% track congestion on trunk line",
+    desc: "Heavy rain + 65% track congestion",
     params: {
       trainNumber: "12301",
       weatherCondition: "heavy-rain" as const,
@@ -23,9 +23,9 @@ const presetScenarios = [
     },
   },
   {
-    name: "Overhead Line Block",
+    name: "OHE Block",
     tag: "Maintenance",
-    desc: "45-min overhead equipment work + speed restriction",
+    desc: "45-min overhead equipment work",
     params: {
       trainNumber: "12301",
       weatherCondition: "clear" as const,
@@ -38,9 +38,9 @@ const presetScenarios = [
     },
   },
   {
-    name: "Yard Turnaround Delay",
-    tag: "Yard",
-    desc: "Late incoming rake turnaround (+40 min handover delay)",
+    name: "Yard Turnaround",
+    tag: "Rake",
+    desc: "Late incoming rake (+40 min)",
     params: {
       trainNumber: "12301",
       weatherCondition: "clear" as const,
@@ -53,9 +53,9 @@ const presetScenarios = [
     },
   },
   {
-    name: "Priority Clear Run",
-    tag: "Clearance",
-    desc: "Minimal congestion + 130 km/h speed priority",
+    name: "Priority Run",
+    tag: "Clear",
+    desc: "Minimal congestion, 130 km/h",
     params: {
       trainNumber: "12301",
       weatherCondition: "clear" as const,
@@ -100,66 +100,33 @@ export default function WhatIfSimulation() {
   }, []);
 
   return (
-    <div className="space-y-5">
-      {/* Header Banner */}
-      <div className="app-card p-5">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="w-2 h-2 rounded-full bg-amber-400" />
-              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                Contingency Sandbox
+    <div className="space-y-4">
+      {/* Presets */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+        {presetScenarios.map((preset, i) => (
+          <button
+            key={i}
+            onClick={() => applyPreset(preset)}
+            className={`text-left p-3 rounded-md border transition-all ${
+              activePreset === preset.name
+                ? "bg-[var(--nr-accent-muted)] border-[var(--nr-accent)]/30 text-[var(--nr-text)]"
+                : "bg-[var(--nr-surface)] border-[var(--nr-border)] text-[var(--nr-text-secondary)] hover:text-[var(--nr-text)] hover:border-[var(--nr-border-strong)]"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--nr-bg)] text-[var(--nr-text-muted)] border border-[var(--nr-border)]">
+                {preset.tag}
               </span>
+              <ArrowRight className="w-3 h-3 text-[var(--nr-text-faint)]" />
             </div>
-            <h1 className="text-lg font-semibold text-zinc-100 tracking-tight">
-              Operational What-If Simulator
-            </h1>
-            <p className="text-xs text-zinc-400 mt-0.5">
-              Simulate delay ripples caused by weather disruptions, track blocks, and yard turnaround before ordering dispatch.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 text-xs text-zinc-300 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 shrink-0">
-            <Sparkles className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-            <span>AI Automated Mitigation Active</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Preset Scenarios */}
-      <div className="app-card p-4">
-        <div className="text-xs font-medium text-zinc-400 mb-2.5">
-          Preset Operational Scenarios
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-          {presetScenarios.map((preset, i) => (
-            <button
-              key={i}
-              onClick={() => applyPreset(preset)}
-              className={`text-left p-3 rounded-lg border transition-all ${
-                activePreset === preset.name
-                  ? "bg-zinc-800 text-zinc-100 border-zinc-600"
-                  : "bg-zinc-900/60 border-zinc-800/80 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-zinc-950 text-zinc-400 border border-zinc-800">
-                  {preset.tag}
-                </span>
-                <ArrowRight className="w-3 h-3 text-zinc-500" />
-              </div>
-              <div className="text-xs font-semibold text-zinc-200">
-                {preset.name}
-              </div>
-              <p className="text-[11px] text-zinc-400 mt-0.5 line-clamp-1">{preset.desc}</p>
-            </button>
-          ))}
-        </div>
+            <div className="text-[12px] font-semibold">{preset.name}</div>
+            <p className="text-[10px] text-[var(--nr-text-muted)] mt-0.5 line-clamp-1">{preset.desc}</p>
+          </button>
+        ))}
       </div>
 
       {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Left: Controls */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         <div className="lg:col-span-4">
           <ScenarioPanel
             trainNumber={trainNumber}
@@ -170,8 +137,7 @@ export default function WhatIfSimulation() {
           />
         </div>
 
-        {/* Right: Output */}
-        <div className="lg:col-span-8 space-y-5">
+        <div className="lg:col-span-8 space-y-4">
           <SimulationResult result={result} isLoading={isLoading} />
           <DifferenceChart result={result} />
         </div>

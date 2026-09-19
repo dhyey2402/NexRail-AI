@@ -18,20 +18,20 @@ export function SearchPage() {
   }, [])
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-12">
-      <h1 className="text-2xl font-semibold tracking-tight">Track a train</h1>
-      <p className="mt-2 text-sm text-muted">
-        Enter a 5-digit train number to open live status and predicted arrival.
+    <div className="mx-auto max-w-2xl px-4 py-10">
+      <h1 className="text-lg font-semibold tracking-tight text-ink">Track a Train</h1>
+      <p className="mt-1.5 text-[13px] text-muted">
+        Enter a 5-digit train number for live status and AI predictions.
       </p>
-      <div className="mt-6">
+      <div className="mt-5">
         <SearchBar size="large" onSubmit={(id) => navigate(`/train/${id}`)} />
       </div>
 
-      <h2 className="mb-3 mt-10 text-sm font-semibold">Recent searches</h2>
+      <h2 className="mb-2.5 mt-8 text-[12px] font-semibold text-muted uppercase tracking-wider">Recent Searches</h2>
       {recent.length === 0 ? (
-        <EmptyState title="Nothing saved yet" message="Tracked trains will appear here on this device." />
+        <EmptyState title="No recent searches" message="Tracked trains will appear here." />
       ) : (
-        <div className="grid gap-2">
+        <div className="grid gap-1.5">
           {recent.map((item) => (
             <TrainCard key={item.number} item={item} />
           ))}
@@ -40,8 +40,8 @@ export function SearchPage() {
 
       {liveTrains.length > 0 && (
         <>
-          <h2 className="mb-3 mt-10 text-sm font-semibold">Active trains</h2>
-          <div className="grid gap-2">
+          <h2 className="mb-2.5 mt-8 text-[12px] font-semibold text-muted uppercase tracking-wider">Active Trains</h2>
+          <div className="grid gap-1.5">
             {liveTrains.slice(0, 10).map((t) => (
               <TrainCard
                 key={t.trainNumber}

@@ -1,91 +1,105 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { AlertCircle, ShieldCheck } from 'lucide-react'
-import { useAuth } from '../contexts/AuthContext'
-import { login as apiLogin } from '../services/api'
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { login as apiLogin } from "../services/api";
+import { Train, AlertCircle } from "lucide-react";
 
-export function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
-  const { login } = useAuth()
+export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
     try {
-      const data = await apiLogin({ email, password })
-      if (data.user.role !== 'ADMIN') {
-        throw new Error('Unauthorized: Admin access required')
-      }
-      login(data.access_token, data.user)
-      navigate('/')
+      const data = await apiLogin({ email, password });
+      login(data.access_token, data.user);
+      navigate("/");
     } catch (err: any) {
-      setError(err.message || 'Failed to login')
+      setError(err.message || "Invalid credentials");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950 p-4">
-      <div className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900/50 p-8 shadow-xl">
-        <div className="mb-8 flex flex-col items-center space-y-2 text-center">
-          <div className="mb-4 flex justify-center">
-            <div className="rounded-full bg-emerald-500/10 p-3">
-              <ShieldCheck className="h-6 w-6 text-emerald-400" />
-            </div>
+    <div className="min-h-screen flex items-center justify-center bg-[var(--nr-bg)] px-4">
+      <div className="w-full max-w-sm">
+        {/* Brand */}
+        <div className="text-center mb-8">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--nr-accent)] mb-4">
+            <Train className="h-5 w-5 text-white" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-100">Admin Console</h1>
-          <p className="text-sm text-zinc-400">Enter your credentials to access the RailWise admin dashboard</p>
+          <h1 className="text-xl font-semibold text-[var(--nr-text)]">
+            NexRail AI
+          </h1>
+          <p className="text-[13px] text-[var(--nr-text-muted)] mt-1">
+            Operations Console — Sign In
+          </p>
         </div>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
+
+        {/* Form */}
+        <form
+          onSubmit={handleSubmit}
+          className="nr-card p-6 space-y-4"
+        >
           {error && (
-            <div className="flex items-center gap-2 rounded-lg bg-red-900/20 p-3 text-sm text-red-400 border border-red-900/50">
-              <AlertCircle className="h-4 w-4" />
-              <p>{error}</p>
+            <div className="flex items-center gap-2 p-3 rounded-md text-[13px] bg-[var(--nr-danger-muted)] text-[var(--nr-danger)] border border-[var(--nr-danger)]/20">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {error}
             </div>
           )}
-          
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium text-zinc-300">Email</label>
+
+          <div className="space-y-1.5">
+            <label className="block text-[12px] font-medium text-[var(--nr-text-secondary)]">
+              Email
+            </label>
             <input
-              id="email"
               type="email"
-              placeholder="admin@railwise.in"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-md border border-[var(--nr-border)] bg-[var(--nr-bg)] px-3 py-2 text-[13px] text-[var(--nr-text)] placeholder:text-[var(--nr-text-faint)] outline-none focus:border-[var(--nr-accent)] transition-colors"
+              placeholder="admin@nexrail.in"
             />
           </div>
-          
-          <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium text-zinc-300">Password</label>
+
+          <div className="space-y-1.5">
+            <label className="block text-[12px] font-medium text-[var(--nr-text-secondary)]">
+              Password
+            </label>
             <input
-              id="password"
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-md border border-[var(--nr-border)] bg-[var(--nr-bg)] px-3 py-2 text-[13px] text-[var(--nr-text)] placeholder:text-[var(--nr-text-faint)] outline-none focus:border-[var(--nr-accent)] transition-colors"
+              placeholder="Enter password"
             />
           </div>
-          
-          <button 
-            type="submit" 
+
+          <button
+            type="submit"
             disabled={loading}
-            className="w-full rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-zinc-950 disabled:opacity-50 transition-colors"
+            className="w-full flex items-center justify-center gap-2 rounded-md bg-[var(--nr-accent)] hover:bg-[var(--nr-accent-hover)] disabled:opacity-50 text-white text-[13px] font-medium py-2.5 transition-colors"
           >
-            {loading ? 'Authenticating...' : 'Sign In'}
+            {loading ? (
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : null}
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
+
+        <p className="text-center text-[11px] text-[var(--nr-text-faint)] mt-6">
+          NexRail AI — Indian Railways ETA Intelligence
+        </p>
       </div>
     </div>
-  )
+  );
 }

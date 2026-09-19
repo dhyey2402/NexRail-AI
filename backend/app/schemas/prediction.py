@@ -63,7 +63,7 @@ class PredictionResponse(BaseModel):
     Response schema returning official ML model predictions, confidence,
     and explainability reasoning.
     """
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="allow", protected_namespaces=())
 
     predicted_eta: str = Field(
         ...,

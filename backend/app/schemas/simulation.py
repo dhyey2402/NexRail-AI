@@ -35,7 +35,7 @@ class SimulationResponse(BaseModel):
     Response schema returning counterfactual simulation results,
     impact comparisons, and domain explanations.
     """
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="allow", protected_namespaces=())
 
     original_eta: Optional[str] = Field(
         None,

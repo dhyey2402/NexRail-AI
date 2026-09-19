@@ -11,14 +11,14 @@ type StatCardProps = {
 
 export function StatCard({ label, value, hint, icon: Icon, tone = 'default' }: StatCardProps) {
   return (
-    <div className="rounded-[14px] border border-border bg-surface p-4">
-      <div className="mb-3 flex items-center gap-2 text-muted">
-        <Icon className="h-4 w-4" />
-        <span className="text-xs font-medium uppercase tracking-wide">{label}</span>
+    <div className="rounded-md border border-border bg-surface p-3.5">
+      <div className="mb-2 flex items-center gap-2 text-muted">
+        <Icon className="h-3.5 w-3.5" />
+        <span className="text-[10px] font-medium uppercase tracking-wider">{label}</span>
       </div>
       <p
         className={cn(
-          'text-2xl font-semibold tracking-tight',
+          'text-xl font-bold tracking-tight font-mono',
           tone === 'ok' && 'text-ok',
           tone === 'warn' && 'text-warn',
           tone === 'danger' && 'text-danger',
@@ -27,7 +27,7 @@ export function StatCard({ label, value, hint, icon: Icon, tone = 'default' }: S
       >
         {value}
       </p>
-      {hint ? <p className="mt-1 text-xs text-muted">{hint}</p> : null}
+      {hint ? <p className="mt-1 text-[11px] text-muted">{hint}</p> : null}
     </div>
   )
 }

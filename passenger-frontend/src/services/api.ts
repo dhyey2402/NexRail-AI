@@ -128,8 +128,13 @@ export async function getTrain(id: string): Promise<TrainLive> {
   let correctedSpeed = data.speed;
   if (data.stations && data.stations.length > 0) {
     const origin = data.stations[0];
-    if ((data.current_station === origin.code || data.current_station === data.source) && !origin.actualDeparture) {
-      correctedSpeed = 0;
+    if (data.current_station === origin.code || data.current_station === data.source) {
+      const now = Date.now();
+      const actualDepTime = origin.actualDeparture ? new Date(origin.actualDeparture).getTime() : 0;
+      // If actual departure is missing OR it's in the future, it hasn't departed.
+      if (!origin.actualDeparture || actualDepTime > now) {
+        correctedSpeed = 0;
+      }
     }
   }
 

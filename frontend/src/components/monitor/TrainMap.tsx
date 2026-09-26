@@ -376,21 +376,6 @@ export default function TrainMap({
                   </span>
                 </div>
               </div>
-
-              <div className="flex items-center gap-2 pt-1 border-t border-[var(--nr-border)]/60">
-                <a
-                  href={`/search`}
-                  className="flex-1 text-center py-1 rounded bg-[var(--nr-surface-raised)] hover:bg-[var(--nr-border)] text-[var(--nr-text)] text-[10px] font-medium border border-[var(--nr-border)] transition-colors"
-                >
-                  ETA Predictor
-                </a>
-                <a
-                  href={`/simulate?train=${displayedTrain.trainNumber}`}
-                  className="flex-1 text-center py-1 rounded bg-[var(--nr-accent)] hover:bg-[var(--nr-accent-hover)] text-white text-[10px] font-medium transition-colors"
-                >
-                  Simulate
-                </a>
-              </div>
             </div>
           </div>
         )}

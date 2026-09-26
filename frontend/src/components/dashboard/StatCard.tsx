@@ -19,56 +19,43 @@ export default function StatCard({
   isPrimary = false,
 }: StatCardProps) {
   return (
-    <div className={cn(
-      "p-5 flex flex-col justify-between h-full nr-animate-in",
-      isPrimary ? "nr-card-elevated" : "nr-card"
-    )}>
-      {/* Label + Icon */}
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.08em]" style={{ color: "var(--nr-text-muted)" }}>
+    <div className="nr-card p-4 flex flex-col justify-between h-full">
+      {/* Label */}
+      <div className="flex items-center justify-between gap-2 mb-2.5">
+        <span className="text-[11px] font-medium text-[var(--nr-text-muted)] uppercase tracking-wider">
           {title}
         </span>
-        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-          style={{
-            background: isPrimary ? "var(--nr-accent-muted)" : "var(--nr-bg-subtle)",
-            border: "1px solid var(--nr-border)",
-          }}
-        >
-          <Icon className="h-3.5 w-3.5" style={{ color: isPrimary ? "var(--nr-accent)" : "var(--nr-text-faint)" }} />
-        </div>
+        <Icon className="h-3.5 w-3.5 text-[var(--nr-text-faint)]" />
       </div>
 
       {/* Metric */}
       <div
         className={cn(
-          "font-bold font-mono tracking-[-0.03em]",
-          isPrimary ? "text-[30px]" : "text-[24px]"
+          "font-bold font-mono tracking-tight text-[var(--nr-text)]",
+          isPrimary ? "text-[28px]" : "text-[22px]"
         )}
-        style={{ color: "var(--nr-text-white)" }}
       >
         {value}
       </div>
 
       {/* Footer */}
-      <div className="mt-3 pt-2.5 flex items-center text-[10.5px] min-h-[20px]"
-        style={{ borderTop: "1px solid var(--nr-border)" }}
-      >
+      <div className="mt-2.5 pt-2 border-t border-[var(--nr-border)] flex items-center text-[11px] min-h-[20px]">
         {trend ? (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <span
               className={cn(
-                "font-mono font-semibold px-2 py-0.5 rounded-full text-[10px]",
+                "font-mono font-semibold px-1.5 py-0.5 rounded text-[10px]",
                 trend.value >= 0
-                  ? "nr-badge-success"
-                  : "nr-badge-danger"
+                  ? "text-[var(--nr-success)] bg-[var(--nr-success-muted)]"
+                  : "text-[var(--nr-danger)] bg-[var(--nr-danger-muted)]"
               )}
             >
               {trend.value >= 0 ? "↑" : "↓"} {Math.abs(trend.value)}%
             </span>
-            <span style={{ color: "var(--nr-text-muted)" }}>{trend.label}</span>
+            <span className="text-[var(--nr-text-muted)]">{trend.label}</span>
           </div>
         ) : (
-          <span style={{ color: "var(--nr-text-muted)" }}>{subtitle}</span>
+          <span className="text-[var(--nr-text-muted)]">{subtitle}</span>
         )}
       </div>
     </div>

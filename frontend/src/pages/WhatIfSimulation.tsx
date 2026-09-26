@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import ScenarioPanel from "../components/simulation/ScenarioPanel";
 import SimulationResult from "../components/simulation/SimulationResult";
 import DifferenceChart from "../components/simulation/DifferenceChart";
@@ -24,7 +23,7 @@ const presetScenarios = [
     },
   },
   {
-    name: "OHE Power Block",
+    name: "OHE Block",
     tag: "Maintenance",
     desc: "45-min overhead equipment work",
     params: {
@@ -39,9 +38,9 @@ const presetScenarios = [
     },
   },
   {
-    name: "Yard Turnaround Delay",
+    name: "Yard Turnaround",
     tag: "Rake",
-    desc: "Late incoming rake (+40 min turnaround)",
+    desc: "Late incoming rake (+40 min)",
     params: {
       trainNumber: "12301",
       weatherCondition: "clear" as const,
@@ -54,9 +53,9 @@ const presetScenarios = [
     },
   },
   {
-    name: "Express Priority Run",
-    tag: "Clear Track",
-    desc: "Minimal congestion, 130 km/h green corridor",
+    name: "Priority Run",
+    tag: "Clear",
+    desc: "Minimal congestion, 130 km/h",
     params: {
       trainNumber: "12301",
       weatherCondition: "clear" as const,
@@ -71,10 +70,7 @@ const presetScenarios = [
 ];
 
 export default function WhatIfSimulation() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const queryTrain = searchParams.get("train") || "12301";
-
-  const [trainNumber, setTrainNumber] = useState(queryTrain);
+  const [trainNumber, setTrainNumber] = useState("12301");
   const [result, setResult] = useState<SimulationResultType | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +80,7 @@ export default function WhatIfSimulation() {
     setIsLoading(true);
     setError(null);
     try {
-      const simResult = await simulateScenario({ ...params, trainNumber });
+      const simResult = await simulateScenario(params);
       setResult(simResult);
     } catch (err: any) {
       setError(err?.message || "Simulation failed. Please verify train parameters.");
@@ -101,74 +97,64 @@ export default function WhatIfSimulation() {
 
   const applyPreset = (preset: typeof presetScenarios[0]) => {
     setActivePreset(preset.name);
-    const targetTrain = trainNumber || preset.params.trainNumber;
-    handleRunSimulation({ ...preset.params, trainNumber: targetTrain });
+    setTrainNumber(preset.params.trainNumber);
+    handleRunSimulation(preset.params);
   };
 
   useEffect(() => {
-    if (queryTrain) {
-      setTrainNumber(queryTrain);
-    }
-    handleRunSimulation({ ...presetScenarios[0].params, trainNumber: queryTrain });
-  }, [queryTrain]);
+    handleRunSimulation(presetScenarios[0].params);
+  }, []);
 
   return (
     <div className="space-y-4">
-      {/* ── Simulation Methodology Disclosure ────────────────── */}
-      <div className="flex flex-wrap items-center justify-between bg-[var(--nr-surface-glass)] backdrop-blur border border-[var(--nr-border)] px-4 py-2.5 rounded-md gap-3 shadow-sm">
+      {/* Simulation Methodology Disclosure */}
+      <div className="flex flex-wrap items-center justify-between bg-[var(--nr-surface)] border border-[var(--nr-border)] px-3.5 py-2 rounded-md gap-2">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[var(--nr-accent-muted)] text-[var(--nr-accent)] font-bold border border-[var(--nr-accent)]/30">
-            DISPATCH SIMULATION ENGINE
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--nr-accent-muted)] text-[var(--nr-accent)] font-semibold border border-[var(--nr-accent)]/30">
+            HYBRID PIPELINE
           </span>
           <span className="text-[11px] text-[var(--nr-text-secondary)]">
-            Counterfactual evaluation: <strong className="text-[var(--nr-text)]">LightGBM Terminal Variance</strong> + <strong className="text-[var(--nr-text)]">Kinematic Propagation Model</strong>.
+            Counterfactual evaluation: <strong className="text-[var(--nr-text)]">Model-Based ML Inference</strong> (terminal delay impact) + <strong className="text-[var(--nr-text)]">Rule-Based Corridor Propagation</strong> (downstream halts).
           </span>
-        </div>
-        <div className="flex items-center gap-1 text-[11px] font-mono text-[var(--nr-text-muted)]">
-          <Sparkles className="w-3.5 h-3.5 text-[var(--nr-accent)]" />
-          <span>Real-time Dispatch Advisory Active</span>
         </div>
       </div>
 
-      {/* ── Presets Grid ─────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+      {/* Presets */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         {presetScenarios.map((preset, i) => (
           <button
             key={i}
             onClick={() => applyPreset(preset)}
-            className={`text-left p-3 rounded-md border transition-all cursor-pointer ${
+            className={`text-left p-3 rounded-md border transition-all ${
               activePreset === preset.name
-                ? "bg-[var(--nr-surface-raised)] border-[var(--nr-accent)]/50 text-[var(--nr-text)] shadow-sm ring-1 ring-[var(--nr-accent)]/30"
+                ? "bg-[var(--nr-accent-muted)] border-[var(--nr-accent)]/30 text-[var(--nr-text)]"
                 : "bg-[var(--nr-surface)] border-[var(--nr-border)] text-[var(--nr-text-secondary)] hover:text-[var(--nr-text)] hover:border-[var(--nr-border-strong)]"
             }`}
           >
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--nr-bg-subtle)] text-[var(--nr-text-muted)] border border-[var(--nr-border)]">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--nr-bg)] text-[var(--nr-text-muted)] border border-[var(--nr-border)]">
                 {preset.tag}
               </span>
               <ArrowRight className="w-3 h-3 text-[var(--nr-text-faint)]" />
             </div>
-            <div className="text-[12px] font-semibold text-[var(--nr-text)]">{preset.name}</div>
-            <p className="text-[11px] text-[var(--nr-text-muted)] mt-0.5 line-clamp-1">{preset.desc}</p>
+            <div className="text-[12px] font-semibold">{preset.name}</div>
+            <p className="text-[10px] text-[var(--nr-text-muted)] mt-0.5 line-clamp-1">{preset.desc}</p>
           </button>
         ))}
       </div>
 
       {error && (
-        <div className="p-3.5 bg-rose-950/60 border border-rose-800 rounded-md text-[12px] text-rose-300">
+        <div className="p-3 bg-rose-950/60 border border-rose-800 rounded-md text-[12px] text-rose-300">
           {error}
         </div>
       )}
 
-      {/* ── Main Parameters and Results Grid ─────────────────── */}
+      {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         <div className="lg:col-span-4">
           <ScenarioPanel
             trainNumber={trainNumber}
-            onTrainNumberChange={(num) => {
-              setTrainNumber(num);
-              setSearchParams({ train: num });
-            }}
+            onTrainNumberChange={setTrainNumber}
             onSimulate={handleRunSimulation}
             onReset={handleReset}
             isLoading={isLoading}

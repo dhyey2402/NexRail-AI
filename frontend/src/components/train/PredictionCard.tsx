@@ -44,6 +44,17 @@ export default function PredictionCard({ prediction }: PredictionCardProps) {
         </span>
       </div>
 
+      {/* Degraded State Warning for Mid-Journey Static Model Predictions */}
+      {prediction.isValidForLiveJourney === false && (
+        <div className="bg-amber-950/50 border-b border-amber-800/60 px-4 py-2.5 flex items-start gap-2.5">
+          <AlertCircle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+          <div className="text-[11px] text-amber-200/90 leading-relaxed">
+            <span className="font-semibold text-amber-300">Degraded Forecast Notice: </span>
+            {prediction.invalidReason || "Train is midway through its journey. Current model is trained on origin-to-destination journeys and cannot produce reliable live mid-journey forecasts without dynamic checkpoint telemetry."}
+          </div>
+        </div>
+      )}
+
       {/* Station Route */}
       <div className="px-4 py-3.5 border-b border-[var(--nr-border)]/60">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

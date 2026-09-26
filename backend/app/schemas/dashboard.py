@@ -11,6 +11,8 @@ class DashboardStats(BaseModel):
     activeBlockSections: int
     signalingHealthPercent: float
     inferenceLatencyMs: int
+    modelName: Optional[str] = None
+    modelVersion: Optional[str] = None
 
 class PredictionHistoryItem(BaseModel):
     id: str
@@ -18,12 +20,13 @@ class PredictionHistoryItem(BaseModel):
     trainName: str
     date: str
     predictedETA: str
-    actualArrival: Optional[str]
+    actualArrival: Optional[str] = None
     predictedDelay: float
-    actualDelay: Optional[float]
+    actualDelay: Optional[float] = None
     confidenceScore: float
-    accuracy: Optional[float]
-    status: Optional[str]
+    accuracy: Optional[float] = None
+    status: Optional[str] = None
+    station: Optional[str] = None
 
 class PaginatedPredictionHistory(BaseModel):
     data: List[PredictionHistoryItem]

@@ -54,26 +54,26 @@ export default function Dashboard() {
             title="Active Trains"
             value={stats.totalTrains}
             icon={Activity}
-            trend={{ value: 4.2, label: "vs yesterday" }}
+            subtitle="Active tracked fleet"
             isPrimary
           />
           <StatCard
             title="Avg Delay"
             value={`${stats.avgDelay}m`}
             icon={Clock}
-            trend={{ value: stats.avgDelay > 15 ? -8 : 12, label: "vs avg" }}
+            subtitle={stats.avgDelay <= 0 ? "Fleet on schedule" : "Average active fleet delay"}
           />
           <StatCard
             title="On-Time Rate"
             value={`${stats.totalTrains ? Math.round((stats.onTimeTrains / stats.totalTrains) * 100) : 0}%`}
             icon={Activity}
-            subtitle="Fleet punctuality"
+            subtitle="Fleet punctuality (<=15m delay)"
           />
           <StatCard
             title="Model Accuracy"
-            value={`${stats.avgAccuracy ?? 0}%`}
+            value={stats.avgAccuracy !== null && stats.avgAccuracy !== undefined ? `${stats.avgAccuracy}%` : "Unavailable"}
             icon={BarChart3}
-            subtitle="LightGBM pipeline"
+            subtitle={stats.avgAccuracy !== null && stats.avgAccuracy !== undefined ? (stats.modelName || "LightGBM Regressor") : "Requires validated actuals"}
           />
         </div>
       )}

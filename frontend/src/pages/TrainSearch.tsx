@@ -10,13 +10,15 @@ import EmptyState from "../components/common/EmptyState";
 import { predictETA, getWeather } from "../services/api";
 import type { Prediction, WeatherData } from "../types";
 
+import { getStationCoord } from "../lib/geo";
+
 const suggestedTrains = [
-  { number: "12301", name: "Howrah Rajdhani", loco: "WAP-7" },
-  { number: "12951", name: "Mumbai Rajdhani", loco: "WAP-7" },
-  { number: "12002", name: "Bhopal Shatabdi", loco: "WAP-5" },
-  { number: "12627", name: "Karnataka Exp", loco: "WAP-7" },
-  { number: "12839", name: "Chennai Mail", loco: "WAP-4" },
-  { number: "12259", name: "Sealdah Duronto", loco: "WAP-7" },
+  { number: "12301", name: "Howrah Rajdhani", loco: "Electric" },
+  { number: "22959", name: "Jamnagar Intercity", loco: "Superfast" },
+  { number: "12002", name: "Bhopal Shatabdi", loco: "Shatabdi" },
+  { number: "12050", name: "Gatiman Express", loco: "Superfast" },
+  { number: "22926", name: "Okha Vande Bharat", loco: "Vande Bharat" },
+  { number: "12202", name: "Garib Rath Express", loco: "Garib Rath" },
 ];
 
 export default function TrainSearch() {
@@ -46,19 +48,35 @@ export default function TrainSearch() {
       // Fetch dynamic telemetry for weather coordinates
       import("../services/api").then(async ({ getTrainDetails }) => {
         const trainData = await getTrainDetails(query);
+        let stationCode = predData.currentStationCode || predData.currentStation;
         if (trainData) {
+          stationCode = trainData.currentStationCode || trainData.currentStation || stationCode;
           setPrediction(prev => prev ? {
             ...prev,
-            currentStation: trainData.currentStation || "N/A",
-            currentStationCode: trainData.currentStationCode || "N/A",
-            nextStation: trainData.nextStation || "N/A",
-            nextStationCode: trainData.nextStationCode || "N/A",
+            currentStation: trainData.currentStation || prev.currentStation,
+            currentStationCode: trainData.currentStationCode || prev.currentStationCode,
+            nextStation: trainData.nextStation || prev.nextStation,
+            nextStationCode: trainData.nextStationCode || prev.nextStationCode,
           } : prev);
         }
-        const lat = trainData?.latitude ?? 28.6139;
-        const lon = trainData?.longitude ?? 77.2090;
-        const weatherData = await getWeather(lat, lon, trainData?.currentStation || predData.currentStation);
-        setWeather(weatherData);
+
+        let lat = trainData?.latitude;
+        let lon = trainData?.longitude;
+
+        if (!lat || !lon || lat === 0 || lon === 0) {
+          const resolved = getStationCoord(stationCode);
+          if (resolved) {
+            lat = resolved[0];
+            lon = resolved[1];
+          }
+        }
+
+        if (lat && lon && lat !== 0 && lon !== 0) {
+          const weatherData = await getWeather(lat, lon, stationCode);
+          setWeather(weatherData);
+        } else {
+          setWeather(null);
+        }
       });
     } catch {
       setError("Failed to fetch prediction. Please try again.");

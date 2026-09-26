@@ -31,6 +31,9 @@ export interface Train {
   lastUpdated: string;
   latitude?: number;
   longitude?: number;
+  stations?: any[];
+  isLiveLocationValid?: boolean;
+  geoStatus?: "LIVE" | "STALE" | "DEGRADED" | "UNAVAILABLE";
 }
 
 export type TrainStatus =
@@ -61,6 +64,8 @@ export interface Prediction {
   predictedDelay: number;
   confidenceScore: number; // 0-100
   operationalStatus: string;
+  isValidForLiveJourney?: boolean;
+  invalidReason?: string | null;
   locoTelemetry: {
     speed: number;
     maxSpeed: number;
@@ -126,6 +131,7 @@ export interface SimulationResult {
     mitigatedDelayMinutes: number;
     reroutePlan: string;
   };
+  corridorStations?: string[];
 }
 
 export interface SimulationFactor {
@@ -145,7 +151,11 @@ export interface PredictionHistoryItem {
   actualDelay: number | null;
   confidenceScore: number;
   accuracy: number | null;
-  status: "accurate" | "close" | "missed" | null;
+  status: string | null;
+  station?: string | null;
+  delay?: number;
+  confidence?: number;
+  loco?: string;
 }
 
 export interface AnalyticsData {
@@ -166,4 +176,6 @@ export interface DashboardStats {
   activeBlockSections: number;
   signalingHealthPercent: number;
   inferenceLatencyMs: number;
+  modelName?: string | null;
+  modelVersion?: string | null;
 }

@@ -366,28 +366,17 @@ class PredictionService:
                     if not real_train_name:
                         real_train_name = meta.get("train_type", f"Train {train_num}")
 
-                    existing_record = self.db.query(PredictionHistory).filter(
-                        PredictionHistory.train_number == str(train_num)
-                    ).order_by(PredictionHistory.created_at.desc()).first()
-
                     now_utc = datetime.now(timezone.utc)
-                    if existing_record and existing_record.created_at.date() == today:
-                        existing_record.predicted_eta = eta_dt
-                        existing_record.predicted_delay = float(predicted_delay)
-                        existing_record.confidence = float(result.get("confidence", 85.0))
-                        existing_record.weather_condition = str(result.get("weather_context", {}).get("condition", "Clear"))
-                        existing_record.created_at = now_utc
-                    else:
-                        history_record = PredictionHistory(
-                            train_number=str(train_num),
-                            train_name=str(real_train_name),
-                            predicted_eta=eta_dt,
-                            predicted_delay=float(predicted_delay),
-                            confidence=float(result.get("confidence", 85.0)),
-                            weather_condition=str(result.get("weather_context", {}).get("condition", "Clear")),
-                            created_at=now_utc,
-                        )
-                        self.db.add(history_record)
+                    history_record = PredictionHistory(
+                        train_number=str(train_num),
+                        train_name=str(real_train_name),
+                        predicted_eta=eta_dt,
+                        predicted_delay=float(predicted_delay),
+                        confidence=float(result.get("confidence", 85.0)),
+                        weather_condition=str(result.get("weather_context", {}).get("condition", "Clear")),
+                        created_at=now_utc,
+                    )
+                    self.db.add(history_record)
                     self.db.commit()
                 except Exception as hist_err:
                     logger.warning(f"Could not persist PredictionHistory for {train_num}: {hist_err}")

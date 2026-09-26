@@ -16,16 +16,18 @@ interface DifferenceChartProps {
 export default function DifferenceChart({ result }: DifferenceChartProps) {
   if (!result) return null;
 
-  const stations = ["NDLS (Dep)", "CNB (Current)", "ALD", "MGS", "DHN", "HWH (Arr)"];
-  const baseDelays = [0, result.originalDelay, result.originalDelay + 2, result.originalDelay + 4, result.originalDelay + 6, result.originalDelay + 8];
+  const stations = (result.corridorStations && result.corridorStations.length >= 2)
+    ? result.corridorStations
+    : [`#${result.trainNumber} (Dep)`, "En Route", "Next Junction", "Destination (Arr)"];
 
   const chartData = stations.map((st, index) => {
-    const factorRatio = index / (stations.length - 1);
-    const simDelay = Math.round(baseDelays[index] + (result.additionalDelay * factorRatio));
+    const factorRatio = stations.length > 1 ? index / (stations.length - 1) : 1;
+    const baseDelay = Math.round(result.originalDelay * factorRatio);
+    const simDelay = Math.round((result.originalDelay + result.additionalDelay) * factorRatio);
 
     return {
       station: st,
-      "Baseline Delay": baseDelays[index],
+      "Baseline Delay": baseDelay,
       "Simulated Delay": simDelay,
     };
   });
@@ -34,9 +36,14 @@ export default function DifferenceChart({ result }: DifferenceChartProps) {
     <div className="nr-card p-4">
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div>
-          <h4 className="text-[13px] font-semibold text-[var(--nr-text)]">Delay Propagation</h4>
+          <div className="flex items-center gap-2">
+            <h4 className="text-[13px] font-semibold text-[var(--nr-text)]">Delay Propagation</h4>
+            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[var(--nr-surface-raised)] text-[var(--nr-accent)] border border-[var(--nr-border)]">
+              Rule-Based Propagation
+            </span>
+          </div>
           <p className="text-[11px] text-[var(--nr-text-muted)] mt-0.5">
-            Estimated delay progression along corridor
+            Downstream delay progression along verified corridor halts
           </p>
         </div>
         <div className="flex items-center gap-3 text-[11px]">

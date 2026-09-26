@@ -93,3 +93,7 @@ class SimulationResponse(BaseModel):
         default=None,
         description="Total simulation execution latency in milliseconds"
     )
+    corridor_stations: Optional[List[str]] = Field(
+        default_factory=list,
+        description="Key station stops along corridor for delay progression visualization"
+    )

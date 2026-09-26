@@ -17,7 +17,7 @@ export default function Analytics() {
     async function load() {
       setIsLoading(true);
       try {
-        const analytics = await getAnalytics();
+        const analytics = await getAnalytics(timeRange);
         setData(analytics);
       } finally {
         setIsLoading(false);
@@ -30,7 +30,9 @@ export default function Analytics() {
     <div className="space-y-4">
       {/* Time Range */}
       <div className="flex items-center justify-between">
-        <div />
+        <div className="flex items-center gap-2">
+          <span className="text-[12px] text-[var(--nr-text-muted)] font-medium">Historical Window:</span>
+        </div>
         <div className="bg-[var(--nr-surface)] p-0.5 rounded-md border border-[var(--nr-border)] flex items-center gap-0.5">
           {["24h", "7d", "30d"].map((range) => (
             <button
@@ -59,9 +61,9 @@ export default function Analytics() {
           <div className="w-9 h-9 bg-[var(--nr-surface-raised)] border border-[var(--nr-border)] rounded-md flex items-center justify-center mb-3">
             <Activity className="w-4 h-4 text-[var(--nr-text-muted)]" />
           </div>
-          <h3 className="text-[13px] font-semibold text-[var(--nr-text)]">No analytics available</h3>
+          <h3 className="text-[13px] font-semibold text-[var(--nr-text)]">Analytics Unavailable</h3>
           <p className="text-[12px] text-[var(--nr-text-muted)] mt-1 max-w-sm">
-            Not enough prediction history to generate analytics.
+            Analytics will appear after sufficient validated prediction history is collected in the selected time range ({timeRange}).
           </p>
         </div>
       ) : (

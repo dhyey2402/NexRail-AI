@@ -73,13 +73,18 @@ export default function WhatIfSimulation() {
   const [trainNumber, setTrainNumber] = useState("12301");
   const [result, setResult] = useState<SimulationResultType | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [activePreset, setActivePreset] = useState<string>(presetScenarios[0].name);
 
   const handleRunSimulation = async (params: SimulationParams) => {
     setIsLoading(true);
+    setError(null);
     try {
       const simResult = await simulateScenario(params);
       setResult(simResult);
+    } catch (err: any) {
+      setError(err?.message || "Simulation failed. Please verify train parameters.");
+      setResult(null);
     } finally {
       setIsLoading(false);
     }
@@ -87,6 +92,7 @@ export default function WhatIfSimulation() {
 
   const handleReset = () => {
     setResult(null);
+    setError(null);
   };
 
   const applyPreset = (preset: typeof presetScenarios[0]) => {
@@ -101,6 +107,18 @@ export default function WhatIfSimulation() {
 
   return (
     <div className="space-y-4">
+      {/* Simulation Methodology Disclosure */}
+      <div className="flex flex-wrap items-center justify-between bg-[var(--nr-surface)] border border-[var(--nr-border)] px-3.5 py-2 rounded-md gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--nr-accent-muted)] text-[var(--nr-accent)] font-semibold border border-[var(--nr-accent)]/30">
+            HYBRID PIPELINE
+          </span>
+          <span className="text-[11px] text-[var(--nr-text-secondary)]">
+            Counterfactual evaluation: <strong className="text-[var(--nr-text)]">Model-Based ML Inference</strong> (terminal delay impact) + <strong className="text-[var(--nr-text)]">Rule-Based Corridor Propagation</strong> (downstream halts).
+          </span>
+        </div>
+      </div>
+
       {/* Presets */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         {presetScenarios.map((preset, i) => (
@@ -124,6 +142,12 @@ export default function WhatIfSimulation() {
           </button>
         ))}
       </div>
+
+      {error && (
+        <div className="p-3 bg-rose-950/60 border border-rose-800 rounded-md text-[12px] text-rose-300">
+          {error}
+        </div>
+      )}
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">

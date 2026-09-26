@@ -19,6 +19,9 @@ export default function LiveMonitor() {
     try {
       const data = await getLiveTrains();
       setTrains(data);
+      if (data.length > 0 && !data.some(t => t.trainNumber === selectedTrainNumber)) {
+        setSelectedTrainNumber(data[0].trainNumber);
+      }
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);

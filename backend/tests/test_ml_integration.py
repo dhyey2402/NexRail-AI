@@ -18,6 +18,16 @@ from app.services.ai.prediction_service import PredictionService
 
 
 from starlette.testclient import TestClient
+from app.models.user import User
+from app.dependencies.auth import get_current_user
+
+
+@pytest.fixture(autouse=True)
+def override_auth_for_ml_tests():
+    admin = User(id=1, email="admin@nexrail.ai", role="ADMIN", is_active=True)
+    app.dependency_overrides[get_current_user] = lambda: admin
+    yield
+    app.dependency_overrides.pop(get_current_user, None)
 
 
 def test_model_loading_and_lifespan():

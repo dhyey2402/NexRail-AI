@@ -50,62 +50,69 @@ export default function RecentPredictions({ predictions }: RecentPredictionsProp
                 </td>
               </tr>
             ) : (
-              predictions.map((pred, i) => (
-                <tr key={i} className="hover:bg-[var(--nr-surface-raised)]/40 transition-colors">
-                  <td className="px-4 py-2.5">
-                    <div className="flex items-center gap-2 font-mono">
-                      <span className="font-semibold text-[var(--nr-accent)]">#{pred.trainNumber}</span>
-                      <span className="font-sans text-[var(--nr-text)]">{pred.trainName}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <span className="text-[10px] font-mono bg-[var(--nr-surface-raised)] border border-[var(--nr-border)] px-1.5 py-0.5 rounded text-[var(--nr-text-secondary)]">
-                      {pred.loco || "WAP-7"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2.5 text-[var(--nr-text-secondary)]">
-                    {pred.station}
-                  </td>
-                  <td className="px-4 py-2.5 text-[var(--nr-text)] font-mono font-semibold">
-                    {pred.predictedETA}
-                  </td>
-                  <td className="px-4 py-2.5 font-mono">
-                    <span className={cn(
-                      "font-semibold",
-                      pred.delay == null ? "text-[var(--nr-text-muted)]" :
-                      pred.delay === 0 ? "text-emerald-400" :
-                      pred.delay < 15 ? "text-amber-400" : "text-rose-400"
-                    )}>
-                      {pred.delay == null ? "—" : pred.delay === 0 ? "On Time" : `+${pred.delay}m`}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <div className="flex items-center gap-2 font-mono">
-                      <div className="w-12 h-1 rounded-full bg-[var(--nr-surface-raised)] overflow-hidden">
-                        <div
-                          className={cn(
-                            "h-full rounded-full",
-                            pred.confidence != null && pred.confidence >= 90 ? "bg-emerald-500" :
-                            pred.confidence != null && pred.confidence >= 75 ? "bg-amber-500" : "bg-rose-500"
-                          )}
-                          style={{ width: `${pred.confidence ?? 0}%` }}
-                        />
+              predictions.map((pred: any, i) => {
+                const delayVal = pred.predictedDelay ?? pred.delay;
+                const confVal = pred.confidenceScore ?? pred.confidence;
+                const stationVal = pred.station || "En Route";
+                const statusVal = pred.status || (delayVal != null ? (delayVal === 0 ? "on-time" : delayVal <= 15 ? "slight-delay" : "delayed") : null);
+
+                return (
+                  <tr key={i} className="hover:bg-[var(--nr-surface-raised)]/40 transition-colors">
+                    <td className="px-4 py-2.5">
+                      <div className="flex items-center gap-2 font-mono">
+                        <span className="font-semibold text-[var(--nr-accent)]">#{pred.trainNumber}</span>
+                        <span className="font-sans text-[var(--nr-text)]">{pred.trainName}</span>
                       </div>
-                      <span className="text-[10px] text-[var(--nr-text-muted)]">
-                        {pred.confidence != null ? `${pred.confidence.toFixed(1)}%` : "—"}
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <span className="text-[10px] font-mono bg-[var(--nr-surface-raised)] border border-[var(--nr-border)] px-1.5 py-0.5 rounded text-[var(--nr-text-secondary)]">
+                        {pred.loco || "Mainline"}
                       </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <span className={cn(
-                      "inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border",
-                      pred.status && pred.status !== "—" ? getStatusBg(pred.status) : "bg-zinc-800 text-zinc-400 border-zinc-700"
-                    )}>
-                      {pred.status && pred.status !== "—" ? getStatusLabel(pred.status) : "—"}
-                    </span>
-                  </td>
-                </tr>
-              ))
+                    </td>
+                    <td className="px-4 py-2.5 text-[var(--nr-text-secondary)] font-mono text-[11px]">
+                      {stationVal}
+                    </td>
+                    <td className="px-4 py-2.5 text-[var(--nr-text)] font-mono font-semibold">
+                      {pred.predictedETA}
+                    </td>
+                    <td className="px-4 py-2.5 font-mono">
+                      <span className={cn(
+                        "font-semibold",
+                        delayVal == null ? "text-[var(--nr-text-muted)]" :
+                        delayVal === 0 ? "text-emerald-400" :
+                        delayVal < 15 ? "text-amber-400" : "text-rose-400"
+                      )}>
+                        {delayVal == null ? "—" : delayVal === 0 ? "On Time" : `+${delayVal}m`}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <div className="flex items-center gap-2 font-mono">
+                        <div className="w-12 h-1 rounded-full bg-[var(--nr-surface-raised)] overflow-hidden">
+                          <div
+                            className={cn(
+                              "h-full rounded-full",
+                              confVal != null && confVal >= 90 ? "bg-emerald-500" :
+                              confVal != null && confVal >= 75 ? "bg-amber-500" : "bg-rose-500"
+                            )}
+                            style={{ width: `${confVal ?? 0}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] text-[var(--nr-text-muted)]">
+                          {confVal != null ? `${Number(confVal).toFixed(1)}%` : "—"}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <span className={cn(
+                        "inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border capitalize",
+                        statusVal && statusVal !== "—" ? getStatusBg(statusVal) : "bg-zinc-800 text-zinc-400 border-zinc-700"
+                      )}>
+                        {statusVal && statusVal !== "—" ? getStatusLabel(statusVal) : "Active"}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

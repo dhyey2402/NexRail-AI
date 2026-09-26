@@ -28,7 +28,13 @@ def override_get_db():
     finally:
         db.close()
 
-app.dependency_overrides[get_db] = override_get_db
+import pytest
+
+@pytest.fixture(autouse=True, scope="module")
+def override_db_for_auth():
+    app.dependency_overrides[get_db] = override_get_db
+    yield
+    app.dependency_overrides.pop(get_db, None)
 
 client = TestClient(app)
 

@@ -78,15 +78,21 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 }
 
 export async function getRecentPredictions(): Promise<PredictionHistoryItem[]> {
-  return await fetchApi("/dashboard/recent-predictions");
+  const items = await fetchApi("/dashboard/recent-predictions");
+  return items.map((p: any) => ({
+    ...p,
+    delay: p.predictedDelay,
+    confidence: p.confidenceScore,
+    station: p.station || "En Route"
+  }));
 }
 
 export async function getLiveTrains(): Promise<Train[]> {
   return await fetchApi("/dashboard/live-trains");
 }
 
-export async function getAnalytics(): Promise<AnalyticsData> {
-  return await fetchApi("/dashboard/analytics");
+export async function getAnalytics(timeRange: string = "7d"): Promise<AnalyticsData> {
+  return await fetchApi(`/dashboard/analytics?range=${encodeURIComponent(timeRange)}`);
 }
 
 export async function getPredictionHistory(
@@ -105,10 +111,6 @@ export async function getPredictionHistory(
 export async function getTrainDetails(trainNumber: string): Promise<Train | null> {
   try {
     const data = await fetchApi(`/train/${trainNumber}`);
-    
-    // Map backend TrainResponse to frontend Train interface
-    // Backend: train_number, train_name, current_station, next_station, latitude, longitude, 
-    // current_delay, speed, last_updated
     const delay = data.current_delay || 0;
     
     let status: any = "on-time";
@@ -131,12 +133,12 @@ export async function getTrainDetails(trainNumber: string): Promise<Train | null
       actualDeparture: data.actualDeparture || null,
       scheduledArrival: data.scheduledArrival || null,
       currentDelay: delay,
-      speed: data.speed,
-      maxPermittedSpeed: data.maxPermittedSpeed || null,
+      speed: data.speed || 0,
+      maxPermittedSpeed: data.maxPermittedSpeed || 130,
       locoType: data.locoType || null,
-      rakeLength: data.rakeLength || null,
-      priorityTier: data.priorityTier || null,
-      signalAspect: data.signalAspect || null,
+      rakeLength: data.rakeLength || 22,
+      priorityTier: data.priorityTier || "Express",
+      signalAspect: data.signalAspect || "green",
       blockOccupancy: data.blockOccupancy || `Block ${data.current_station}-${data.next_station}`,
       status,
       route: data.route || null,
@@ -144,7 +146,10 @@ export async function getTrainDetails(trainNumber: string): Promise<Train | null
       trainType: data.train_type || null,
       lastUpdated: data.last_updated,
       latitude: data.latitude,
-      longitude: data.longitude
+      longitude: data.longitude,
+      stations: data.stations || [],
+      isLiveLocationValid: data.latitude !== 0 && data.longitude !== 0,
+      geoStatus: (data.latitude !== 0 && data.longitude !== 0) ? "LIVE" : (data.stations && data.stations.length > 0 ? "DEGRADED" : "UNAVAILABLE")
     };
   } catch (error) {
     return null;
@@ -153,7 +158,6 @@ export async function getTrainDetails(trainNumber: string): Promise<Train | null
 
 export async function predictETA(trainNumber: string): Promise<Prediction | null> {
   try {
-    // We send a PredictionRequest to the backend
     const payload = {
       train_number: trainNumber,
       departure_date: new Date().toISOString().split("T")[0]
@@ -164,11 +168,13 @@ export async function predictETA(trainNumber: string): Promise<Prediction | null
       body: JSON.stringify(payload)
     });
 
-    // Map backend PredictionResponse to frontend Prediction interface
-    // Backend: predicted_eta, predicted_delay, confidence, reasoning (List[str]), 
-    // weather_context, recovery_advice, delay_propagation, alternative_plan
-    
-    const shapBreakdown: any[] = []; // Do not fabricate SHAP values if backend does not provide them
+    const shapBreakdown: any[] = (data.shap_breakdown || []).map((s: any) => ({
+      featureName: s.feature_name || s.feature || "Feature",
+      category: s.category || "Infrastructure",
+      valueContribution: s.value_contribution || s.impact || 0,
+      displayValue: s.display_value || `${s.value_contribution || 0}m`,
+      baseline: s.baseline || 0
+    }));
 
     const opStatus = data.predicted_delay < 15 
       ? "Slight Delay · Priority Recovery Mode" 
@@ -176,21 +182,23 @@ export async function predictETA(trainNumber: string): Promise<Prediction | null
 
     return {
       trainNumber: trainNumber,
-      trainName: `Train ${trainNumber}`,
-      currentStation: "N/A",
-      currentStationCode: "N/A",
-      nextStation: "N/A",
-      nextStationCode: "N/A",
-      currentDelay: data.predicted_delay, // Placeholder mapping
+      trainName: data.train_name || `Train ${trainNumber}`,
+      currentStation: data.current_station || "N/A",
+      currentStationCode: data.current_station || "N/A",
+      nextStation: data.next_station || "N/A",
+      nextStationCode: data.next_station || "N/A",
+      currentDelay: data.current_delay ?? data.predicted_delay,
       predictedETA: data.predicted_eta,
       predictedDelay: data.predicted_delay,
       confidenceScore: data.confidence,
       operationalStatus: opStatus,
+      isValidForLiveJourney: data.is_valid_for_live_journey !== undefined ? data.is_valid_for_live_journey : true,
+      invalidReason: data.invalid_reason || null,
       locoTelemetry: {
-        speed: 80,
+        speed: data.speed ?? 0,
         maxSpeed: 130,
-        throttlePercent: 75,
-        brakePressure: 5.0,
+        throttlePercent: (data.speed ?? 0) > 0 ? 70 : 0,
+        brakePressure: (data.speed ?? 0) > 0 ? 5.0 : 0.0,
         nextSignals: ["green"]
       },
       shapBreakdown: shapBreakdown,
@@ -217,7 +225,6 @@ export async function getWeather(lat: number, lon: number, stationCode?: string)
   try {
     const data = await fetchApi(`/weather/current?lat=${lat}&lon=${lon}`);
     
-    // Map WeatherResponse
     return {
       station: stationCode && stationCode !== "N/A" ? `${stationCode} Station` : `${lat.toFixed(2)}°N, ${lon.toFixed(2)}°E`,
       condition: data.weather_condition,
@@ -227,14 +234,13 @@ export async function getWeather(lat: number, lon: number, stationCode?: string)
       windSpeed: data.wind_speed,
       rainfall: data.rainfall,
       advisory: data.rainfall > 5 ? "Heavy Rain Alert" : "Clear Conditions",
-      icon: "cloud", // fallback
+      icon: "cloud",
       updatedAt: data.timestamp
     };
   } catch (error) {
-    // Fallback if weather API fails
     return {
       station: stationCode && stationCode !== "N/A" ? `${stationCode} Station` : `${lat.toFixed(2)}°N, ${lon.toFixed(2)}°E`,
-      condition: "Unknown",
+      condition: "Unavailable",
       temperature: 0,
       humidity: 0,
       visibility: 0,
@@ -248,70 +254,49 @@ export async function getWeather(lat: number, lon: number, stationCode?: string)
 }
 
 export async function simulateScenario(params: SimulationParams): Promise<SimulationResult> {
-  try {
-    // Backend SimulationRequest takes: original_features, modified_features
-    const payload = {
-      original_features: {
-        train_number: params.trainNumber
-      },
-      modified_features: {
-        weather_condition: params.weatherCondition,
-        track_congestion: params.trackCongestion,
-        late_incoming_rake: params.lateIncomingRake ? 1 : 0,
-        rake_delay: params.rakeDelay,
-        maintenance_block: params.maintenanceBlock ? 1 : 0,
-        maintenance_duration: params.maintenanceDuration,
-        average_speed: params.averageSpeed
-      }
-    };
+  // Backend SimulationRequest takes: original_features, modified_features
+  const payload = {
+    original_features: {
+      train_number: params.trainNumber
+    },
+    modified_features: {
+      weather_condition: params.weatherCondition,
+      track_congestion: params.trackCongestion,
+      late_incoming_rake: params.lateIncomingRake ? 1 : 0,
+      rake_delay: params.rakeDelay,
+      maintenance_block: params.maintenanceBlock ? 1 : 0,
+      maintenance_duration: params.maintenanceDuration,
+      average_speed: params.averageSpeed
+    }
+  };
 
-    const data = await fetchApi("/simulate/", {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
+  const data = await fetchApi("/simulate/", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
 
-    // Map SimulationResponse
-    return {
-      trainNumber: params.trainNumber,
-      trainName: `Train ${params.trainNumber}`,
-      originalETA: data.original_eta || "12:00",
-      newETA: data.new_eta,
-      originalDelay: data.original_delay || 0,
-      additionalDelay: data.additional_delay,
-      totalDelay: (data.original_delay || 0) + data.additional_delay,
-      confidenceScore: data.confidence || 85,
-      factors: [
-        {
-          name: "Simulated Modification",
-          delayImpact: data.additional_delay,
-          severity: data.additional_delay > 20 ? "high" : "medium"
-        }
-      ],
-      scenarioName: "User Defined Scenario",
-      smartDispatchSolution: {
-        action: "AI Interlocking Dynamic Reroute",
-        mitigatedDelayMinutes: Math.round(data.additional_delay * 0.4),
-        reroutePlan: "Switch to alternate line."
+  return {
+    trainNumber: params.trainNumber,
+    trainName: data.train_name || `Train ${params.trainNumber}`,
+    originalETA: data.original_eta || "12:00",
+    newETA: data.new_eta,
+    originalDelay: data.original_delay || 0,
+    additionalDelay: data.additional_delay,
+    totalDelay: (data.original_delay || 0) + data.additional_delay,
+    confidenceScore: data.confidence || 85,
+    factors: [
+      {
+        name: "Simulated Modification",
+        delayImpact: data.additional_delay,
+        severity: data.additional_delay > 20 ? "high" : "medium"
       }
-    };
-  } catch (error) {
-    // Return dummy data on failure to not break UI
-    return {
-      trainNumber: params.trainNumber,
-      trainName: `Train ${params.trainNumber}`,
-      originalETA: "12:00",
-      newETA: "12:30",
-      originalDelay: 0,
-      additionalDelay: 30,
-      totalDelay: 30,
-      confidenceScore: 80,
-      factors: [],
-      scenarioName: "Failed to simulate",
-      smartDispatchSolution: {
-        action: "None",
-        mitigatedDelayMinutes: 0,
-        reroutePlan: "N/A"
-      }
-    };
-  }
+    ],
+    scenarioName: "User Defined Scenario",
+    smartDispatchSolution: {
+      action: "AI Interlocking Dynamic Reroute",
+      mitigatedDelayMinutes: Math.round(data.additional_delay * 0.4),
+      reroutePlan: "Switch to alternate line."
+    },
+    corridorStations: data.corridor_stations || []
+  };
 }

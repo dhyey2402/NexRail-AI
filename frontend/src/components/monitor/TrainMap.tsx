@@ -1,59 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import type { Train as TrainType } from "../../types";
 import { cn, formatDelay, getStatusBg, getStatusLabel } from "../../lib/utils";
-import { Radio, Navigation2, MapPin, Gauge, Clock } from "lucide-react";
+import { Radio, Navigation2, MapPin, Gauge, Clock, AlertTriangle, ShieldCheck, HelpCircle } from "lucide-react";
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useTheme } from "../../contexts/ThemeContext";
 import { createRoot } from "react-dom/client";
+import { getStationCoord, isGeoConsistent } from "../../lib/geo";
 
 interface TrainMapProps {
   trains: TrainType[];
   selectedTrainNumber?: string;
   onSelectTrain?: (train: TrainType) => void;
 }
-
-interface StationNode {
-  code: string;
-  name: string;
-  lat: number;
-  lng: number;
-  isHub?: boolean;
-}
-
-const keyStations: StationNode[] = [
-  { code: "NDLS", name: "New Delhi", lat: 28.6433, lng: 77.2197, isHub: true },
-  { code: "AGC", name: "Agra Cantt", lat: 27.1583, lng: 77.9892 },
-  { code: "CNB", name: "Kanpur Central", lat: 26.4385, lng: 80.3255, isHub: true },
-  { code: "ALD", name: "Prayagraj Jn", lat: 25.4411, lng: 81.8282 },
-  { code: "DDU", name: "Pt. Deen Dayal Upadhyay", lat: 25.2818, lng: 83.1228 },
-  { code: "PNBE", name: "Patna Jn", lat: 25.6022, lng: 85.1376 },
-  { code: "DHN", name: "Dhanbad Jn", lat: 23.7885, lng: 86.4253 },
-  { code: "HWH", name: "Howrah Jn", lat: 22.5833, lng: 88.3417, isHub: true },
-  { code: "BPL", name: "Bhopal Jn", lat: 23.2642, lng: 77.4133, isHub: true },
-  { code: "JHS", name: "Jhansi Jn", lat: 25.4415, lng: 78.5583 },
-  { code: "BRC", name: "Vadodara Jn", lat: 22.3117, lng: 73.1812 },
-  { code: "MMCT", name: "Mumbai Central", lat: 18.9696, lng: 72.8193, isHub: true },
-  { code: "NGP", name: "Nagpur Jn", lat: 21.1478, lng: 79.0833, isHub: true },
-  { code: "HYB", name: "Hyderabad", lat: 17.3917, lng: 78.4682 },
-  { code: "BZA", name: "Vijayawada Jn", lat: 16.5186, lng: 80.6200 },
-  { code: "SBC", name: "Bangalore City", lat: 12.9779, lng: 77.5667, isHub: true },
-  { code: "MAS", name: "Chennai Central", lat: 13.0827, lng: 80.2707, isHub: true },
-  { code: "TVC", name: "Trivandrum Central", lat: 8.4875, lng: 76.9525, isHub: true },
-];
-
-const railwayLines = [
-  ["NDLS", "CNB", "ALD", "DDU", "PNBE", "DHN", "HWH"],
-  ["NDLS", "AGC", "BRC", "MMCT"],
-  ["NDLS", "AGC", "JHS", "BPL", "NGP", "BZA", "MAS"],
-  ["MAS", "BZA", "HWH"],
-  ["MAS", "SBC", "TVC"],
-  ["NGP", "HYB", "BZA"],
-];
-
-const getStationCoords = (code: string) => {
-  return keyStations.find((s) => s.code === code) || { lat: 21.1458, lng: 79.0882 };
-};
 
 export default function TrainMap({
   trains,
@@ -65,8 +24,8 @@ export default function TrainMap({
   const mapInstanceRef = useRef<L.Map | null>(null);
   const { theme } = useTheme();
 
-  // Selected train takes precedence for tooltip if nothing is hovered
-  const displayedTrain = activeInspectTrain || trains.find((t) => t.trainNumber === selectedTrainNumber);
+  // Selected train takes precedence for inspection card if nothing is hovered
+  const displayedTrain = activeInspectTrain || trains.find((t) => t.trainNumber === selectedTrainNumber) || trains[0];
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -77,138 +36,258 @@ export default function TrainMap({
         attributionControl: false,
       }).setView([22.5, 79.0], 5);
 
-      L.tileLayer(
-        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        {
-          maxZoom: 20,
-        }
-      ).addTo(mapInstanceRef.current);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+      }).addTo(mapInstanceRef.current);
     }
 
     const map = mapInstanceRef.current;
 
     // Clear existing dynamic layers
     map.eachLayer((layer) => {
-      if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+      if (layer instanceof L.Marker || layer instanceof L.Polyline || layer instanceof L.CircleMarker) {
         map.removeLayer(layer);
       }
     });
 
-    // Draw static railway lines
-    railwayLines.forEach((line) => {
-      const coords = line.map(code => {
-        const s = getStationCoords(code);
-        return [s.lat, s.lng] as [number, number];
-      });
-      L.polyline(coords, {
-        color: theme === 'dark' ? '#232938' : '#dfe2ea',
-        weight: 3,
-      }).addTo(map);
-      
-      L.polyline(coords, {
-        color: theme === 'dark' ? '#2f3749' : '#c8cdd8',
-        weight: 1,
-        dashArray: '3 3',
-      }).addTo(map);
-    });
+    // Track active React roots to unmount on layer removal
+    const activeRoots: Array<{ unmount: () => void }> = [];
 
-    // Draw key stations
-    keyStations.forEach((st) => {
-      const iconHtml = document.createElement('div');
-      iconHtml.className = 'flex flex-col items-center justify-center -translate-y-2';
-      
-      const dot = document.createElement('div');
-      dot.className = cn(
-        'rounded-full border-2 transition-colors duration-150',
-        st.isHub ? 'w-3 h-3' : 'w-2 h-2',
-        theme === 'dark' ? 'bg-[#0a0c10] border-[#5c657a]' : 'bg-white border-[#8b93a5]'
-      );
-      
-      const label = document.createElement('div');
-      label.className = cn(
-        'mt-1 font-mono text-[9px] font-semibold whitespace-nowrap',
-        theme === 'dark' ? 'text-[#8b93a5]' : 'text-[#5c657a]'
-      );
-      label.innerText = st.code;
-      
-      iconHtml.appendChild(dot);
-      if (st.isHub) iconHtml.appendChild(label);
-
-      L.marker([st.lat, st.lng], {
-        icon: L.divIcon({
-          html: iconHtml,
-          className: '',
-          iconSize: [40, 40],
-          iconAnchor: [20, 20],
-        })
-      }).addTo(map);
-    });
-
-    // Draw live trains
+    // Process each train
     trains.forEach((train) => {
-      const curr = getStationCoords(train.currentStationCode);
-      const next = getStationCoords(train.nextStationCode);
-      
-      // Interpolate roughly
-      const trainLat = curr.lat + (next.lat - curr.lat) * 0.45;
-      const trainLng = curr.lng + (next.lng - curr.lng) * 0.45;
-
       const isSelected = selectedTrainNumber === train.trainNumber;
-      const isDelayed = train.currentDelay > 30;
-      const isSlight = train.currentDelay > 0 && train.currentDelay <= 30;
 
-      const el = document.createElement('div');
-      
-      // We will render a React component inside the marker using createRoot
-      const root = createRoot(el);
-      
-      root.render(
-        <div 
-          className={cn(
-            "relative w-5 h-5 rounded-full border flex items-center justify-center transition-all shadow-xs cursor-pointer",
-            isDelayed
-              ? "bg-rose-950 border-[#c44a3e]/80 text-rose-300"
-              : isSlight
-                ? "bg-amber-950 border-[#c58f2a]/80 text-amber-300"
-                : "bg-[#12151c] border-[#3b82c4] text-[#3b82c4]",
-            isSelected && "scale-125 ring-2 ring-white ring-offset-1 ring-offset-[#0a0c10] z-50",
-            !isSelected && selectedTrainNumber && "opacity-45"
-          )}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelectTrain?.(train);
-          }}
-          onMouseEnter={() => setActiveInspectTrain(train)}
-          onMouseLeave={() => setActiveInspectTrain(null)}
-        >
-          <Navigation2 className="w-2.5 h-2.5 rotate-45" />
-          
-          {/* Always show badge if selected */}
-          {isSelected && (
-            <div className="absolute top-5 left-1/2 -translate-x-1/2 bg-[#12151c]/95 text-[#e8eaf0] text-[9px] font-mono px-1.5 py-0.2 rounded border border-[#2f3749] whitespace-nowrap shadow-sm pointer-events-none">
-              #{train.trainNumber}
-            </div>
-          )}
-        </div>
+      // 1. Extract verified route coordinates from train stations
+      const routeCoords: [number, number][] = [];
+      const stationNodes: Array<{ name: string; code: string; lat: number; lng: number }> = [];
+
+      if (train.stations && Array.isArray(train.stations)) {
+        train.stations.forEach((st: any) => {
+          let sLat = typeof st.lat === "number" ? st.lat : 0;
+          let sLng = typeof st.lng === "number" ? st.lng : 0;
+          const code = st.code || st.stationCode;
+
+          if (sLat === 0 && sLng === 0 && code) {
+            const resolved = getStationCoord(code);
+            if (resolved) {
+              sLat = resolved[0];
+              sLng = resolved[1];
+            }
+          }
+
+          if (sLat >= 6.0 && sLat <= 38.0 && sLng >= 68.0 && sLng <= 98.0) {
+            routeCoords.push([sLat, sLng]);
+            if (st.isHalt !== false && stationNodes.length < 25) {
+              stationNodes.push({ name: st.name || code, code, lat: sLat, lng: sLng });
+            }
+          }
+        });
+      }
+
+      // If stations list is empty, fallback to source/destination resolution
+      if (routeCoords.length === 0) {
+        const srcCoord = getStationCoord(train.sourceCode || train.source);
+        const dstCoord = getStationCoord(train.destinationCode || train.destination);
+        if (srcCoord && dstCoord) {
+          routeCoords.push([srcCoord[0], srcCoord[1]]);
+          routeCoords.push([dstCoord[0], dstCoord[1]]);
+        }
+      }
+
+      // 2. Validate GPS coordinates
+      const hasGps = Boolean(
+        train.latitude &&
+        train.longitude &&
+        train.latitude !== 0 &&
+        train.longitude !== 0 &&
+        train.latitude >= 6.0 &&
+        train.latitude <= 38.0 &&
+        train.longitude >= 68.0 &&
+        train.longitude <= 98.0
       );
 
-      const marker = L.marker([trainLat, trainLng], {
-        icon: L.divIcon({
-          html: el,
-          className: '',
-          iconSize: [20, 20],
-          iconAnchor: [10, 10],
-        }),
-        zIndexOffset: isSelected ? 1000 : 0
-      }).addTo(map);
+      let isGeoValid = false;
+      let isGpsInconsistent = false;
 
-      // Clean up React root on unmount of layer
-      marker.on('remove', () => {
-        setTimeout(() => root.unmount(), 0);
-      });
+      if (hasGps) {
+        const check = isGeoConsistent(train.latitude!, train.longitude!, routeCoords, 150);
+        if (check.ok) {
+          isGeoValid = true;
+        } else {
+          isGpsInconsistent = true;
+        }
+      }
+
+      // Determine Case:
+      // Case A: Valid GPS + Valid Route
+      // Case B: Valid GPS + No Route
+      // Case C: No GPS + Valid Route
+      // Case D: No GPS + No Route
+      // Case E: GPS exists but inconsistent with route
+
+      // Draw Route Polyline if route exists (Cases A, C, E)
+      if (routeCoords.length >= 2) {
+        // Base route glow
+        if (isSelected) {
+          L.polyline(routeCoords, {
+            color: '#3b82c4',
+            weight: 5,
+            opacity: 0.85,
+          }).addTo(map);
+        }
+
+        // Regular route line
+        L.polyline(routeCoords, {
+          color: isSelected ? '#60a5fa' : (theme === 'dark' ? '#334155' : '#cbd5e1'),
+          weight: isSelected ? 3 : 2,
+          dashArray: isSelected ? undefined : '4 4',
+          opacity: isSelected ? 1.0 : 0.6,
+        }).addTo(map);
+
+        // Draw station nodes along route if selected
+        if (isSelected) {
+          stationNodes.forEach((node) => {
+            L.circleMarker([node.lat, node.lng], {
+              radius: 3,
+              color: '#3b82c4',
+              fillColor: theme === 'dark' ? '#0f172a' : '#ffffff',
+              fillOpacity: 1,
+              weight: 1.5,
+            })
+              .bindTooltip(`${node.name} (${node.code})`, { permanent: false, direction: 'top' })
+              .addTo(map);
+          });
+        }
+      }
+
+      // Draw Live Train Marker strictly when GPS is valid and geographically consistent (Cases A, B)
+      if (hasGps && isGeoValid && !isGpsInconsistent) {
+        const markerLat = train.latitude!;
+        const markerLng = train.longitude!;
+
+        const isDelayed = train.currentDelay > 30;
+        const isSlight = train.currentDelay > 0 && train.currentDelay <= 30;
+
+        const el = document.createElement('div');
+        const root = createRoot(el);
+        activeRoots.push(root);
+
+        root.render(
+          <div 
+            className={cn(
+              "relative w-6 h-6 rounded-full border flex items-center justify-center transition-all cursor-pointer shadow-md",
+              isDelayed
+                ? "bg-rose-950 border-rose-500 text-rose-300"
+                : isSlight
+                  ? "bg-amber-950 border-amber-500 text-amber-300"
+                  : "bg-blue-950 border-blue-500 text-blue-300",
+              isSelected && "scale-125 ring-2 ring-white ring-offset-2 ring-offset-zinc-900 z-50",
+              !isSelected && selectedTrainNumber && "opacity-60"
+            )}
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelectTrain?.(train);
+            }}
+            onMouseEnter={() => setActiveInspectTrain(train)}
+            onMouseLeave={() => setActiveInspectTrain(null)}
+          >
+            <Navigation2 className="w-3 h-3 rotate-45" />
+
+            {/* Pulse beacon for live GPS */}
+            <span className={cn(
+              "absolute -inset-1 rounded-full animate-ping opacity-25 pointer-events-none",
+              isDelayed ? "bg-rose-500" : isSlight ? "bg-amber-500" : "bg-blue-500"
+            )} />
+            
+            {/* Always show badge if selected */}
+            {isSelected && (
+              <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-zinc-900/95 text-zinc-100 text-[9px] font-mono px-1.5 py-0.5 rounded border border-zinc-700 whitespace-nowrap shadow-sm pointer-events-none">
+                #{train.trainNumber}
+              </div>
+            )}
+          </div>
+        );
+
+        L.marker([markerLat, markerLng], {
+          icon: L.divIcon({
+            html: el,
+            className: '',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12],
+          }),
+          zIndexOffset: isSelected ? 1000 : 100
+        }).addTo(map);
+      }
+
+      // If selected train, auto-center view
+      if (isSelected) {
+        if (hasGps && isGeoValid && !isGpsInconsistent) {
+          map.panTo([train.latitude!, train.longitude!], { animate: true });
+        } else if (routeCoords.length > 0) {
+          const bounds = L.latLngBounds(routeCoords);
+          map.fitBounds(bounds, { padding: [50, 50], maxZoom: 8 });
+        }
+      }
     });
 
+    return () => {
+      activeRoots.forEach((r) => {
+        try {
+          r.unmount();
+        } catch {}
+      });
+    };
   }, [trains, selectedTrainNumber, theme, onSelectTrain]);
+
+  // Determine current inspection train status banner
+  const getTelemetryStatus = (train: TrainType | null) => {
+    if (!train) return { label: "No Train Selected", color: "text-zinc-400 bg-zinc-800 border-zinc-700", icon: HelpCircle };
+
+    const hasGps = Boolean(
+      train.latitude &&
+      train.longitude &&
+      train.latitude !== 0 &&
+      train.longitude !== 0 &&
+      train.latitude >= 6.0 &&
+      train.latitude <= 38.0 &&
+      train.longitude >= 68.0 &&
+      train.longitude <= 98.0
+    );
+
+    const hasRoute = Boolean(train.stations && train.stations.length > 0) || Boolean(train.source && train.destination);
+
+    if (hasGps && train.isLiveLocationValid !== false) {
+      return {
+        label: "LIVE GPS · VERIFIED POSITION",
+        color: "text-emerald-400 bg-emerald-950/60 border-emerald-800",
+        icon: ShieldCheck,
+      };
+    }
+
+    if (hasGps && train.isLiveLocationValid === false) {
+      return {
+        label: "GPS INCONSISTENT · SHOWING ROUTE ONLY",
+        color: "text-rose-400 bg-rose-950/60 border-rose-800",
+        icon: AlertTriangle,
+      };
+    }
+
+    if (hasRoute) {
+      return {
+        label: "GPS UNAVAILABLE · SHOWING STATIC ROUTE",
+        color: "text-amber-400 bg-amber-950/60 border-amber-800",
+        icon: Clock,
+      };
+    }
+
+    return {
+      label: "TELEMETRY & ROUTE UNAVAILABLE",
+      color: "text-zinc-400 bg-zinc-800 border-zinc-700",
+      icon: HelpCircle,
+    };
+  };
+
+  const teleStatus = getTelemetryStatus(displayedTrain);
 
   return (
     <div className="nr-card p-4">
@@ -218,10 +297,10 @@ export default function TrainMap({
           <Radio className="w-4 h-4 text-[var(--nr-accent)]" />
           <div>
             <h3 className="text-[13px] font-semibold text-[var(--nr-text)]">
-              Network Map
+              Network Operations Map
             </h3>
             <p className="text-[11px] text-[var(--nr-text-muted)]">
-              Live fleet position on trunk corridors
+              Verified train coordinates and corridor paths (Geographically validated)
             </p>
           </div>
         </div>
@@ -230,34 +309,34 @@ export default function TrainMap({
         <div className="flex items-center gap-3 text-[11px]">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span className="text-[var(--nr-text-muted)]">On Time</span>
+            <span className="text-[var(--nr-text-muted)]">Live Position</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-amber-500" />
-            <span className="text-[var(--nr-text-muted)]">Delayed</span>
+            <span className="text-[var(--nr-text-muted)]">Route Static</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-rose-500" />
-            <span className="text-[var(--nr-text-muted)]">Severe</span>
+            <span className="text-[var(--nr-text-muted)]">Delayed</span>
           </div>
         </div>
       </div>
 
       {/* Map Container */}
-      <div className="relative w-full h-[440px] bg-[var(--nr-bg)] rounded-md border border-[var(--nr-border)] overflow-hidden select-none">
+      <div className="relative w-full h-[460px] bg-[var(--nr-bg)] rounded-md border border-[var(--nr-border)] overflow-hidden select-none">
         <div ref={mapRef} className="w-full h-full" />
 
         {/* Docked Inspection Tooltip (Bottom Left) */}
         {displayedTrain && (
-          <div className="absolute bottom-3 left-3 nr-card p-3 z-[1000] max-w-xs shadow-md pointer-events-none bg-[var(--nr-surface)]/95 backdrop-blur">
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between gap-3 border-b border-[var(--nr-border)] pb-1.5">
+          <div className="absolute bottom-3 left-3 nr-card p-3 z-[1000] max-w-sm shadow-xl bg-[var(--nr-surface)]/95 backdrop-blur border border-[var(--nr-border)]">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2 border-b border-[var(--nr-border)] pb-1.5">
                 <div className="flex items-center gap-1.5 font-mono">
                   <span className="text-[12px] font-bold text-[var(--nr-accent)]">
                     #{displayedTrain.trainNumber}
                   </span>
-                  <span className="text-[10px] px-1 py-0.5 rounded bg-[var(--nr-surface-raised)] text-[var(--nr-text-muted)]">
-                    {displayedTrain.locoType?.split(" ")[0] || "WAP-7"}
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--nr-surface-raised)] text-[var(--nr-text-muted)] border border-[var(--nr-border)]">
+                    {displayedTrain.trainType || "Express"}
                   </span>
                 </div>
                 <span
@@ -270,6 +349,12 @@ export default function TrainMap({
                 </span>
               </div>
 
+              {/* Status Banner */}
+              <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-semibold border", teleStatus.color)}>
+                <teleStatus.icon className="w-3.5 h-3.5 shrink-0" />
+                <span>{teleStatus.label}</span>
+              </div>
+
               <div className="text-[12px] font-medium text-[var(--nr-text)] truncate">
                 {displayedTrain.trainName}
               </div>
@@ -277,7 +362,7 @@ export default function TrainMap({
               <div className="grid grid-cols-2 gap-1.5 pt-1 text-[10px] font-mono text-[var(--nr-text-secondary)]">
                 <div className="flex items-center gap-1">
                   <Gauge className="w-3 h-3 text-[var(--nr-text-muted)]" />
-                  <span>{displayedTrain.speed} km/h</span>
+                  <span>{displayedTrain.speed || 0} km/h</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock className="w-3 h-3 text-[var(--nr-text-muted)]" />
@@ -285,7 +370,10 @@ export default function TrainMap({
                 </div>
                 <div className="flex items-center gap-1 col-span-2 text-[var(--nr-text-muted)] truncate">
                   <MapPin className="w-3 h-3 text-[var(--nr-text-muted)] shrink-0" />
-                  <span>{displayedTrain.currentStationCode} → {displayedTrain.nextStationCode} ({displayedTrain.blockOccupancy || "Main"})</span>
+                  <span>
+                    {displayedTrain.currentStationCode} → {displayedTrain.nextStationCode} 
+                    {displayedTrain.route ? ` (${displayedTrain.route})` : ""}
+                  </span>
                 </div>
               </div>
             </div>

@@ -154,6 +154,27 @@ class SimulationService:
                 }
             }
 
+            # Derive corridor stations for realistic delay progression
+            corridor_stations = []
+            if self.db is not None:
+                from app.models.train import TrainCache
+                t_cache = self.db.query(TrainCache).filter(TrainCache.train_number == str(train_num)).first()
+                if t_cache and t_cache.stations:
+                    raw_halts = [s.get("code") or s.get("name") for s in t_cache.stations if s.get("code") or s.get("name")]
+                    if len(raw_halts) > 7:
+                        step = max(1, len(raw_halts) // 6)
+                        sampled = raw_halts[::step]
+                        if raw_halts[-1] not in sampled:
+                            sampled.append(raw_halts[-1])
+                        corridor_stations = sampled[:7]
+                    else:
+                        corridor_stations = raw_halts
+
+            if not corridor_stations:
+                src = meta.get("source", "Origin")
+                dst = meta.get("destination", "Destination")
+                corridor_stations = [f"{src} (Dep)", f"{dst} (Arr)"]
+
             response_data = {
                 "original_eta": orig_eta,
                 "new_eta": sim_result["new_eta"],
@@ -167,6 +188,7 @@ class SimulationService:
                 "model_version": sim_result.get("model_version", "1.1.0-sih2026-production"),
                 "prediction_timestamp": sim_result.get("prediction_timestamp"),
                 "simulation_time_ms": round(elapsed_ms, 2),
+                "corridor_stations": corridor_stations,
             }
 
             logger.info(

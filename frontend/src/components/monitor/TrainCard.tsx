@@ -59,7 +59,7 @@ export default function TrainCard({ train }: TrainCardProps) {
           </div>
           <div className="text-[10px] font-mono text-[var(--nr-text-muted)] flex items-center justify-between truncate">
             <span>{train.blockOccupancy || "SEC-MAIN"}</span>
-            <span className="text-[var(--nr-text-secondary)]">{train.locoType?.split(" ")[0] || "WAP-7"}</span>
+            <span className="text-[var(--nr-text-secondary)]">{train.locoType?.split(" ")[0] || train.trainType || "Mainline"}</span>
           </div>
         </div>
       </div>

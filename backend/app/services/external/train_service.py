@@ -155,22 +155,54 @@ class TrainService(BaseAPIClient):
             or "ARR"
         )
 
-        # Determine GPS coordinates from current station in route or source station
-        latitude = 0.0
-        longitude = 0.0
-        route = data.get("route", [])
+        # Parse route into structured stations
+        stations = []
+        route = data.get("route") or data.get("stations") or []
         if route and isinstance(route, list):
+            passed_current = False
             for station_info in route:
                 st = station_info.get("station", {}) if isinstance(station_info.get("station"), dict) else station_info
                 st_code = st.get("code") or station_info.get("stationCode")
+                
+                # Determine status
+                status = "passed"
                 if st_code == current_station:
-                    latitude = float(st.get("lat", 0.0))
-                    longitude = float(st.get("lng", 0.0))
-                    break
+                    status = "current"
+                    passed_current = True
+                elif passed_current:
+                    status = "upcoming"
+                elif current_station == "DEP":
+                    status = "upcoming"
+
+                stations.append({
+                    "code": st_code,
+                    "name": st.get("name") or station_info.get("stationName"),
+                    "scheduledArrival": station_info.get("scheduledArrival") or station_info.get("sta"),
+                    "scheduledDeparture": station_info.get("scheduledDeparture") or station_info.get("std"),
+                    "actualArrival": station_info.get("actualArrival") or station_info.get("eta"),
+                    "actualDeparture": station_info.get("actualDeparture") or station_info.get("etd"),
+                    "delayMin": int(station_info.get("delayMinutes") or 0),
+                    "status": status,
+                    "platform": station_info.get("platform") or st.get("platform"),
+                    "lat": float(st.get("lat", 0.0) or 0.0),
+                    "lng": float(st.get("lng", 0.0) or 0.0),
+                    "km": float(station_info.get("distanceFromOrigin") or st.get("distance", 0.0) or 0.0)
+                })
+
+        # Enrich stations with authoritative coordinates from geo_service
+        from app.services.external.geo_service import enrich_route_stations, resolve_train_position, is_location_consistent_with_route
+        stations = enrich_route_stations(stations)
 
         # Speed and delay
         current_delay = int(data.get("delayMinutes", curr_loc.get("delayMinutes", 0)))
         speed = float(data.get("speed", train_meta.get("avgSpeed", 0.0)))
+
+        # Determine GPS coordinates with geographic sanity validation
+        latitude, longitude, pos_status = resolve_train_position(current_station, next_station, speed, stations)
+        is_consistent, sanity_msg = is_location_consistent_with_route(latitude, longitude, stations)
+        if not is_consistent:
+            logger.warning(f"Train {clean_train_number} location rejected by sanity check: {sanity_msg}")
+            latitude, longitude = 0.0, 0.0
 
         # Timestamp
         last_updated_str = data.get("lastUpdatedAt")
@@ -194,6 +226,10 @@ class TrainService(BaseAPIClient):
             if meta:
                 if not train_type:
                     train_type = meta.get("train_type")
+                if not source_name:
+                    source_name = meta.get("source")
+                if not destination_name:
+                    destination_name = meta.get("destination")
         except Exception:
             pass
 
@@ -201,42 +237,6 @@ class TrainService(BaseAPIClient):
             curr_loc.get("platform")
             or curr_loc.get("platformNumber")
         )
-
-        # Parse route into structured stations
-        stations = []
-        if route and isinstance(route, list):
-            passed_current = False
-            for station_info in route:
-                st = station_info.get("station", {}) if isinstance(station_info.get("station"), dict) else station_info
-                st_code = st.get("code") or station_info.get("stationCode")
-                
-                # Determine status
-                status = "passed"
-                if st_code == current_station:
-                    status = "current"
-                    passed_current = True
-                elif passed_current:
-                    status = "upcoming"
-                elif current_station == "DEP":
-                    status = "upcoming"
-
-                # If current_station wasn't matched but we have distance info, we could use that,
-                # but RailRadar usually guarantees current_station is in the route unless it just departed.
-
-                stations.append({
-                    "code": st_code,
-                    "name": st.get("name") or station_info.get("stationName"),
-                    "scheduledArrival": station_info.get("scheduledArrival") or station_info.get("sta"),
-                    "scheduledDeparture": station_info.get("scheduledDeparture") or station_info.get("std"),
-                    "actualArrival": station_info.get("actualArrival") or station_info.get("eta"),
-                    "actualDeparture": station_info.get("actualDeparture") or station_info.get("etd"),
-                    "delayMin": int(station_info.get("delayMinutes") or 0),
-                    "status": status,
-                    "platform": station_info.get("platform") or st.get("platform"),
-                    "lat": float(st.get("lat", 0.0)),
-                    "lng": float(st.get("lng", 0.0)),
-                    "km": float(station_info.get("distanceFromOrigin") or st.get("distance", 0.0))
-                })
 
         if not platform_str and stations:
             for s in stations:

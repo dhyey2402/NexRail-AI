@@ -310,6 +310,21 @@ class PredictionService:
             result["delay_propagation"] = self._build_delay_propagation(sanitized, predicted_delay, stations)
             result["alternative_plan"] = self._build_alternative_plan(sanitized, predicted_delay, predicted_eta_str)
             result["inference_time_ms"] = round(elapsed_ms, 2)
+            
+            is_static_model = "current_delay" not in sanitized
+            is_midway = False
+            if live_train:
+                curr = live_train.get("current_station")
+                src = live_train.get("source")
+                if curr and src and curr != src and curr != "DEP":
+                    is_midway = True
+            
+            if is_static_model and is_midway:
+                result["is_valid_for_live_journey"] = False
+                result["invalid_reason"] = "Insufficient live journey state (Model is static origin-to-destination)"
+            else:
+                result["is_valid_for_live_journey"] = True
+                result["invalid_reason"] = None
 
             # Persist prediction in SQLite PredictionHistory
             if self.db is not None:

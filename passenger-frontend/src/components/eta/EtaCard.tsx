@@ -19,6 +19,15 @@ export function EtaCard({ train, prediction, now }: EtaCardProps) {
 
   const lastUpdatedAgo = Math.max(0, Math.round((now - prediction.lastUpdated) / 1000))
 
+  if (!prediction.isValidForLiveJourney) {
+    return (
+      <Card className="border-accent/20 bg-surface flex flex-col justify-center items-center h-full min-h-[160px] p-4 text-center border-dashed">
+        <CardTitle className="text-muted text-lg mb-2">AI FORECAST Unavailable</CardTitle>
+        <CardHint className="text-sm max-w-[80%] text-center">{prediction.invalidReason}</CardHint>
+      </Card>
+    )
+  }
+
   return (
     <Card className="border-accent/20 bg-linear-to-b from-accent-soft/40 to-surface">
       <CardHeader>

@@ -151,6 +151,8 @@ interface BackendPredictionResponse {
   reasoning: string[]
   weather_context?: Record<string, unknown>
   prediction_timestamp?: string
+  is_valid_for_live_journey?: boolean
+  invalid_reason?: string | null
 }
 
 export async function getPrediction(train: TrainLive): Promise<Prediction> {
@@ -179,6 +181,8 @@ export async function getPrediction(train: TrainLive): Promise<Prediction> {
           summary: String(data.weather_context.summary ?? ''),
         }
       : undefined,
+    isValidForLiveJourney: data.is_valid_for_live_journey ?? true,
+    invalidReason: data.invalid_reason ?? null,
   }
 }
 

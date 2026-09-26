@@ -1,9 +1,9 @@
-import { CheckCircle2, CircleDashed } from 'lucide-react'
+import { useState } from 'react'
+import { TrainFront, ChevronDown, ChevronUp } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardHint } from '@/components/ui/card'
 import { EmptyState } from '@/components/common/States'
-import { delayLabel, formatClock } from '@/lib/utils'
-import type { TrainLive, Prediction } from '@/types/train'
-import { TRAIN_STATUS } from '@/types/train'
+import { formatClock } from '@/lib/utils'
+import type { TrainLive, Prediction, StationStop } from '@/types/train'
 
 export function RouteTimeline({
   train,
@@ -12,6 +12,8 @@ export function RouteTimeline({
   train: TrainLive
   prediction: Prediction | null
 }) {
+  const [expanded, setExpanded] = useState(false)
+
   if (!train.stations || train.stations.length === 0) {
     return (
       <Card className="h-full bg-surface pb-6">
@@ -31,7 +33,6 @@ export function RouteTimeline({
     )
   }
 
-  // Merge the propagation predictions into the train stations
   const propagationMap = new Map()
   if (prediction?.delayPropagation) {
     prediction.delayPropagation.forEach((p) => {
@@ -39,114 +40,137 @@ export function RouteTimeline({
     })
   }
 
+  const allStations = train.stations
+
+  // Key stations: First, Current, Last, + 3 spaced out upcoming
+  const currentIndex = allStations.findIndex((s) => s.status === 'current')
+  let displayStations: StationStop[] = []
+
+  if (expanded) {
+    displayStations = allStations
+  } else {
+    const origin = allStations[0]
+    const destination = allStations[allStations.length - 1]
+    const current = currentIndex !== -1 ? allStations[currentIndex] : null
+
+    displayStations.push(origin)
+    if (current && current.code !== origin.code && current.code !== destination.code) {
+      displayStations.push(current)
+    }
+
+    const startIdx = currentIndex !== -1 ? currentIndex + 1 : 1
+    const endIdx = allStations.length - 1
+    const remainingCount = endIdx - startIdx
+
+    if (remainingCount > 0) {
+      if (remainingCount <= 3) {
+        for (let i = startIdx; i < endIdx; i++) displayStations.push(allStations[i])
+      } else {
+        const step = remainingCount / 4
+        displayStations.push(allStations[Math.floor(startIdx + step)])
+        displayStations.push(allStations[Math.floor(startIdx + step * 2)])
+        displayStations.push(allStations[Math.floor(startIdx + step * 3)])
+      }
+    }
+    
+    // Sort and deduplicate
+    displayStations = Array.from(new Set(displayStations.map((s) => s.code)))
+      .map((code) => allStations.find((s) => s.code === code)!)
+      .sort((a, b) => a.km - b.km)
+
+    if (!displayStations.find((s) => s.code === destination.code)) {
+      displayStations.push(destination)
+    }
+  }
+
   return (
-    <Card className="h-full bg-surface pb-6">
-      <CardHeader>
+    <Card className="h-full bg-surface pb-4 flex flex-col">
+      <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Delay Propagation Heatmap</CardTitle>
           <CardHint>
-            Distance: {train.stations[train.stations.length - 1].km} km
+            Distance: {allStations[allStations.length - 1].km} km
           </CardHint>
         </div>
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="text-xs font-medium text-accent flex items-center gap-1 hover:underline"
+        >
+          {expanded ? (
+            <>View Compact <ChevronUp className="h-4 w-4" /></>
+          ) : (
+            <>View All Stations <ChevronDown className="h-4 w-4" /></>
+          )}
+        </button>
       </CardHeader>
 
-      <div className="mt-4 space-y-0 px-5">
-        {train.stations.map((stop, i) => {
-          const isLast = i === train.stations!.length - 1
-          const isPassed = stop.status === 'passed'
-          const isCurrent = stop.status === 'current'
-          const scheduled = stop.scheduledArrival || stop.scheduledDeparture
-          
-          const prop = propagationMap.get(stop.code)
-          const delayMin = prop ? prop.predicted_delay_minutes : stop.delayMin
-          const predictedArr = prop?.predicted_arrival
+      <div className="flex-1 mt-2 px-5 overflow-x-auto pb-4 custom-scrollbar">
+        <div className="flex items-start min-w-max py-4 px-2">
+          {displayStations.map((stop, i) => {
+            const isLast = i === displayStations.length - 1
+            const isPassed = stop.status === 'passed'
+            const isCurrent = stop.status === 'current'
+            
+            const prop = propagationMap.get(stop.code)
+            const delayMin = prop ? prop.predicted_delay_minutes : stop.delayMin
+            const scheduled = stop.scheduledArrival || stop.scheduledDeparture
+            const actual = prop?.predicted_arrival ? `2026-09-10T${prop.predicted_arrival}:00` : (stop.actualArrival || stop.actualDeparture)
+            
+            // Heatmap styling based on delay
+            const severityColor = isPassed
+              ? 'bg-accent/30'
+              : delayMin > 25
+                ? 'bg-danger'
+                : delayMin > 10
+                  ? 'bg-warn'
+                  : 'bg-border'
 
-          const actual = predictedArr
-            ? `2026-09-10T${predictedArr}:00` // Mocking date part for formatter
-            : (stop.actualArrival || stop.actualDeparture)
+            const textColor = isPassed
+              ? 'text-muted'
+              : delayMin > 25
+                ? 'text-danger'
+                : delayMin > 10
+                  ? 'text-warn'
+                  : 'text-ok'
 
-          const tone =
-            delayMin > 15 ? 'text-danger' : delayMin > 0 ? 'text-warn' : 'text-ok'
-
-          // Heatmap bar color based on delay
-          const barColor = isPassed
-            ? 'bg-accent/40'
-            : delayMin > 25
-              ? 'bg-danger/80'
-              : delayMin > 10
-                ? 'bg-warn/80'
-                : 'bg-border'
-
-          return (
-            <div key={stop.code} className="group relative flex gap-4">
-              <div className="flex flex-col items-center">
-                <div
-                  className={`mt-1 flex h-4 w-4 items-center justify-center rounded-full bg-surface ${
-                    isPassed
-                      ? 'text-accent'
-                      : isCurrent
-                        ? train.status === TRAIN_STATUS.DELAYED
-                          ? 'text-danger'
-                          : 'text-accent'
-                        : delayMin > 25 ? 'text-danger' : delayMin > 10 ? 'text-warn' : 'text-border'
-                  }`}
-                >
-                  {isPassed || isCurrent ? (
-                    <CheckCircle2 className="h-full w-full" />
-                  ) : (
-                    <CircleDashed className="h-full w-full" />
-                  )}
-                </div>
+            return (
+              <div key={stop.code} className="relative flex flex-col items-center w-28 shrink-0 group cursor-default">
+                {/* Connector Line */}
                 {!isLast && (
-                  <div
-                    className={`mt-1 w-1 flex-1 rounded-full ${barColor}`}
-                  />
+                  <div className={`absolute top-2 left-1/2 w-full h-1 ${severityColor} z-0`} />
                 )}
-              </div>
 
-              <div className="pb-6">
-                <div className="flex items-center gap-2">
-                  <p
-                    className={`text-sm font-medium ${isPassed ? 'text-ink' : 'text-ink'}`}
-                  >
-                    {stop.name} <span className="text-muted">({stop.code})</span>
+                {/* Node */}
+                <div className="relative z-10 flex flex-col items-center justify-center">
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-surface border-2 ${isPassed ? 'border-accent/40' : (isCurrent ? 'border-accent scale-125' : severityColor.replace('bg-', 'border-'))}`}>
+                    {isCurrent && <TrainFront className="w-3 h-3 text-accent" />}
+                  </div>
+                </div>
+
+                {/* Station Info */}
+                <div className="mt-3 flex flex-col items-center text-center">
+                  <p className={`text-xs font-semibold ${isCurrent ? 'text-accent' : 'text-ink'}`}>
+                    {stop.code}
                   </p>
-                  {isCurrent && (
-                    <span className="rounded bg-accent-soft px-1.5 py-0.5 text-[10px] font-medium text-accent">
-                      Current
-                    </span>
-                  )}
-                  {prop && !isPassed && !isCurrent && (
-                    <span className="rounded bg-muted/10 px-1.5 py-0.5 text-[10px] font-medium text-muted">
-                      Predicted
-                    </span>
+                  <p className={`mt-0.5 text-[10px] font-medium ${textColor}`}>
+                    {delayMin > 0 ? `+${delayMin}m` : 'On time'}
+                  </p>
+                  {expanded && (
+                    <div className="mt-1 flex flex-col items-center opacity-70">
+                      <span className="text-[9px] font-mono">{scheduled ? formatClock(new Date(scheduled)) : '—'}</span>
+                    </div>
                   )}
                 </div>
 
-                <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs">
-                  <div className="flex flex-col">
-                    <span className="text-faint">Sch</span>
-                    <span className="font-medium text-muted">
-                      {scheduled ? formatClock(new Date(scheduled)) : '—'}
-                    </span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-faint">Act/Exp</span>
-                    <span className={`font-medium ${!isPassed ? tone : 'text-ink'}`}>
-                      {actual ? (predictedArr ? predictedArr : formatClock(new Date(actual))) : '—'}
-                    </span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-faint">Delay</span>
-                    <span className={`font-medium ${!isPassed ? tone : 'text-ink'}`}>
-                      {delayLabel(delayMin)}
-                    </span>
-                  </div>
-                </div>
+                {/* Hover Tooltip (Native Title) */}
+                <div 
+                  className="absolute inset-0 z-20" 
+                  title={`${stop.name} (${stop.code})\nDelay: ${delayMin} min\nSch: ${scheduled ? formatClock(new Date(scheduled)) : '—'}\nAct: ${actual ? formatClock(new Date(actual)) : '—'}`} 
+                />
               </div>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
     </Card>
   )

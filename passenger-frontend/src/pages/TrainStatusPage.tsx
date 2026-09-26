@@ -93,6 +93,9 @@ export function TrainStatusPage() {
   const delayTone =
     train.status === TRAIN_STATUS.DELAYED ? 'danger' : train.status === TRAIN_STATUS.SLIGHT_DELAY ? 'warn' : 'ok'
 
+  const isAtOrigin = train.stations && train.stations.length > 0 && train.stations[0].code === train.currentStation
+  const hasNotStarted = train.speedKmph === 0 && (train.currentStation === train.source || isAtOrigin)
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       {/* Header */}
@@ -112,6 +115,14 @@ export function TrainStatusPage() {
         </div>
         <p className="font-mono text-[11px] text-faint">{formatClock(new Date(now))} IST</p>
       </div>
+
+      {/* Not Started Banner */}
+      {hasNotStarted && (
+        <div className="mt-4 flex items-center gap-3 rounded-md border border-accent/20 bg-accent-soft/30 p-3 text-sm font-medium text-accent">
+          <MapPin className="h-4 w-4 shrink-0" />
+          <p>The train is still standing at the platform and has not started its journey.</p>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">

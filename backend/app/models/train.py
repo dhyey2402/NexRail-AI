@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import String, Float, DateTime, func
+from sqlalchemy import String, Float, DateTime, func, JSON
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database.base import Base
@@ -21,3 +21,4 @@ class TrainCache(Base):
         DateTime(timezone=True), default=func.now()
     )
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    stations: Mapped[list] = mapped_column(JSON, default=list)

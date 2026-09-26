@@ -131,4 +131,12 @@ class PredictionResponse(BaseModel):
         default=None,
         description="Model inference execution latency in milliseconds"
     )
+    is_valid_for_live_journey: bool = Field(
+        default=True,
+        description="Indicates if this prediction is valid for a live midway journey"
+    )
+    invalid_reason: Optional[str] = Field(
+        default=None,
+        description="Explanation if the prediction is invalid for the live journey"
+    )
 

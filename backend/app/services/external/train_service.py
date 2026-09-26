@@ -71,7 +71,7 @@ class TrainService(BaseAPIClient):
                         "destination": None,
                         "train_type": None,
                         "platform": None,
-                        "stations": [],
+                        "stations": cached.stations if hasattr(cached, "stations") and cached.stations else [],
                     }
                     try:
                         from app.services.external.train_metadata import TrainMetadataService
@@ -269,6 +269,7 @@ class TrainService(BaseAPIClient):
                     cached_obj.longitude = longitude
                     cached_obj.cached_at = now
                     cached_obj.expires_at = now + timedelta(minutes=self.cache_ttl_minutes)
+                    cached_obj.stations = stations
                 else:
                     new_cache = TrainCache(
                         train_number=clean_train_number,
@@ -281,6 +282,7 @@ class TrainService(BaseAPIClient):
                         longitude=longitude,
                         cached_at=now,
                         expires_at=now + timedelta(minutes=self.cache_ttl_minutes),
+                        stations=stations,
                     )
                     self.db.add(new_cache)
                 self.db.commit()

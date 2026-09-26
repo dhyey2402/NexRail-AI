@@ -90,6 +90,8 @@ export type Prediction = {
   delayPropagation?: DelayPropagation[]
   recoveryAdvice?: RecoveryAdvice[]
   alternativePlan?: AlternativePlan | null
+  isValidForLiveJourney: boolean
+  invalidReason: string | null
 }
 
 export type WeatherInfo = {

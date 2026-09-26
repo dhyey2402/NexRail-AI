@@ -124,7 +124,6 @@ export async function getTrain(id: string): Promise<TrainLive> {
   const trainNumber = id.trim()
   const data = await fetchJson<BackendTrainResponse>(`${BASE_URL}/train/${trainNumber}`)
 
-  // Fix: If train is still at origin and hasn't departed, speed must be 0
   let correctedSpeed = data.speed;
   if (data.stations && data.stations.length > 0) {
     const origin = data.stations[0];

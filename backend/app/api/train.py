@@ -65,18 +65,19 @@ def get_active_trains(db: Session = Depends(get_db)):
     trains = db.query(TrainCache).limit(50).all()
     result = []
     for t in trains:
+        delay = t.current_delay or 0
         status = "on-time"
-        if t.current_delay > 60: status = "severe-delay"
-        elif t.current_delay > 15: status = "delayed"
-        elif t.current_delay > 0: status = "slight-delay"
+        if delay > 60: status = "severe-delay"
+        elif delay > 15: status = "delayed"
+        elif delay > 0: status = "slight-delay"
         
         result.append({
             "trainNumber": t.train_number,
             "trainName": t.train_name or f"Express {t.train_number}",
             "currentStation": t.current_station,
             "nextStation": t.next_station,
-            "currentDelay": t.current_delay,
-            "speed": t.speed,
+            "currentDelay": delay,
+            "speed": t.speed or 0.0,
             "status": status,
         })
     return result

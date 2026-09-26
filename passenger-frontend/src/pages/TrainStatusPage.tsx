@@ -93,8 +93,9 @@ export function TrainStatusPage() {
   const delayTone =
     train.status === TRAIN_STATUS.DELAYED ? 'danger' : train.status === TRAIN_STATUS.SLIGHT_DELAY ? 'warn' : 'ok'
 
+  const isArrived = train.status === TRAIN_STATUS.ARRIVED
   const isAtOrigin = train.stations && train.stations.length > 0 && train.stations[0].code === train.currentStation
-  const hasNotStarted = train.speedKmph === 0 && (train.currentStation === train.source || isAtOrigin)
+  const hasNotStarted = !isArrived && train.speedKmph === 0 && (train.currentStation === train.source || isAtOrigin)
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -124,6 +125,14 @@ export function TrainStatusPage() {
         </div>
       )}
 
+      {/* Arrived Banner */}
+      {isArrived && (
+        <div className="mt-4 flex items-center gap-3 rounded-md border border-ok/20 bg-ok-soft/30 p-3 text-sm font-medium text-ok">
+          <MapPin className="h-4 w-4 shrink-0" />
+          <p>The train has successfully arrived at its final destination: {train.destination || train.currentStation}.</p>
+        </div>
+      )}
+
       {/* Stats */}
       <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
@@ -142,12 +151,12 @@ export function TrainStatusPage() {
         <StatCard
           icon={Navigation}
           label="Next Station"
-          value={train.nextStation}
+          value={isArrived ? 'Destination Reached' : (train.nextStation === 'ARR' ? 'Destination' : train.nextStation)}
         />
         <StatCard
           icon={Gauge}
           label="Speed"
-          value={`${Math.round(train.speedKmph)} km/h`}
+          value={isArrived ? '0 km/h' : `${Math.round(train.speedKmph)} km/h`}
         />
       </div>
 

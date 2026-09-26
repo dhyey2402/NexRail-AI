@@ -1,7 +1,17 @@
 from fastapi import APIRouter, Depends, Path, HTTPException
+from typing import List
+from sqlalchemy.orm import Session
 from app.schemas.train import TrainResponse
 from app.dependencies import get_train_service
 from app.services.external.train_service import TrainService
+from app.database.connection import SessionLocal
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 router = APIRouter(tags=["Train"])
 
@@ -48,3 +58,25 @@ async def get_train(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error while fetching train data: {str(e)}")
+
+@router.get("/active/list", summary="Get active live trains for search suggestions")
+def get_active_trains(db: Session = Depends(get_db)):
+    from app.models.train import TrainCache
+    trains = db.query(TrainCache).limit(50).all()
+    result = []
+    for t in trains:
+        status = "on-time"
+        if t.current_delay > 60: status = "severe-delay"
+        elif t.current_delay > 15: status = "delayed"
+        elif t.current_delay > 0: status = "slight-delay"
+        
+        result.append({
+            "trainNumber": t.train_number,
+            "trainName": t.train_name or f"Express {t.train_number}",
+            "currentStation": t.current_station,
+            "nextStation": t.next_station,
+            "currentDelay": t.current_delay,
+            "speed": t.speed,
+            "status": status,
+        })
+    return result

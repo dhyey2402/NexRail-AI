@@ -238,6 +238,12 @@ class TrainService(BaseAPIClient):
                     "km": float(station_info.get("distanceFromOrigin") or st.get("distance", 0.0))
                 })
 
+        if not platform_str and stations:
+            for s in stations:
+                if s["code"] == current_station and s.get("platform"):
+                    platform_str = s["platform"]
+                    break
+
         result = {
             "train_number": clean_train_number,
             "train_name": train_name,

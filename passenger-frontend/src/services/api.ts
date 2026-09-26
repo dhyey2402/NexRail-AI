@@ -86,7 +86,8 @@ export async function register(data: any) {
   })
 }
 
-function deriveStatus(delayMin: number) {
+function deriveStatus(delayMin: number, currentStation: string, destination?: string, nextStation?: string) {
+  if (currentStation === destination || nextStation === 'ARR') return TRAIN_STATUS.ARRIVED
   if (delayMin <= 0) return TRAIN_STATUS.ON_TIME
   if (delayMin <= 15) return TRAIN_STATUS.SLIGHT_DELAY
   return TRAIN_STATUS.DELAYED
@@ -123,6 +124,15 @@ export async function getTrain(id: string): Promise<TrainLive> {
   const trainNumber = id.trim()
   const data = await fetchJson<BackendTrainResponse>(`${BASE_URL}/train/${trainNumber}`)
 
+  // Fix: If train is still at origin and hasn't departed, speed must be 0
+  let correctedSpeed = data.speed;
+  if (data.stations && data.stations.length > 0) {
+    const origin = data.stations[0];
+    if ((data.current_station === origin.code || data.current_station === data.source) && !origin.actualDeparture) {
+      correctedSpeed = 0;
+    }
+  }
+
   return {
     number: data.train_number,
     name: data.train_name,
@@ -131,9 +141,9 @@ export async function getTrain(id: string): Promise<TrainLive> {
     destination: data.destination ?? undefined,
     currentStation: data.current_station,
     nextStation: data.next_station,
-    status: deriveStatus(data.current_delay),
+    status: deriveStatus(data.current_delay, data.current_station, data.destination ?? undefined, data.next_station),
     delayMin: data.current_delay,
-    speedKmph: data.speed,
+    speedKmph: correctedSpeed,
     platform: data.platform ?? undefined,
     lastUpdated: new Date(data.last_updated).getTime(),
     lat: data.latitude,
@@ -299,7 +309,7 @@ export async function simulateScenario(
 
 export async function getLiveTrains(): Promise<LiveTrainSummary[]> {
   try {
-    const data = await fetchJson<Array<Record<string, unknown>>>(`${BASE_URL}/dashboard/live-trains`)
+    const data = await fetchJson<Array<Record<string, unknown>>>(`${BASE_URL}/train/active/list`)
     return data.map((t) => ({
       trainNumber: String(t.trainNumber ?? ''),
       trainName: String(t.trainName ?? ''),

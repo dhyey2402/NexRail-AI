@@ -96,6 +96,7 @@ export function TrainStatusPage() {
   const isArrived = train.status === TRAIN_STATUS.ARRIVED
   const isAtOrigin = train.stations && train.stations.length > 0 && train.stations[0].code === train.currentStation
   const hasNotStarted = !isArrived && train.speedKmph === 0 && (train.currentStation === train.source || isAtOrigin)
+  const isHaltedMidway = !isArrived && !hasNotStarted && train.speedKmph === 0
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -130,6 +131,14 @@ export function TrainStatusPage() {
         <div className="mt-4 flex items-center gap-3 rounded-md border border-ok/20 bg-ok-soft/30 p-3 text-sm font-medium text-ok">
           <MapPin className="h-4 w-4 shrink-0" />
           <p>The train has successfully arrived at its final destination: {train.destination || train.currentStation}.</p>
+        </div>
+      )}
+
+      {/* Halted Midway Banner */}
+      {isHaltedMidway && (
+        <div className="mt-4 flex items-center gap-3 rounded-md border border-warn/20 bg-warn-soft/30 p-3 text-sm font-medium text-warn">
+          <MapPin className="h-4 w-4 shrink-0" />
+          <p>The train is currently halted at {train.currentStation}.</p>
         </div>
       )}
 

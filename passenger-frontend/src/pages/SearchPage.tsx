@@ -23,6 +23,9 @@ export function SearchPage() {
       <p className="mt-1.5 text-[13px] text-muted">
         Enter a 5-digit train number for live status and AI predictions.
       </p>
+      <div className="mt-2 rounded-md bg-amber-50 p-2.5 text-xs text-amber-700 border border-amber-200/50">
+        <strong>MVP Notice:</strong> For the Hackathon evaluation, only specific curated trains are available in the search suggestions below.
+      </div>
       <div className="mt-5">
         <SearchBar size="large" onSubmit={(id) => navigate(`/train/${id}`)} />
       </div>

@@ -51,6 +51,10 @@ export function EtaCard({ train, prediction, now }: EtaCardProps) {
           {prediction.predictedDelayMin <= 0 ? 'On time' : `+${prediction.predictedDelayMin} min delay`}
         </span>
       </p>
+      
+      {train.speedKmph === 0 && (train.currentStation === train.source || (train.stations && train.stations.length > 0 && train.stations[0].code === train.currentStation)) && (
+        <p className="mt-1 text-[11px] text-muted italic">Initial pre-departure AI forecast based on routing and weather conditions.</p>
+      )}
 
       <div className="mt-4">
         <ConfidenceMeter value={prediction.confidence} />

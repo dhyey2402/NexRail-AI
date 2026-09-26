@@ -301,7 +301,30 @@ class PredictionService:
             elapsed_ms = (time.perf_counter() - t0) * 1000.0
 
             predicted_delay = int(result.get("predicted_delay", 0))
-            predicted_eta_str = str(result.get("predicted_eta", ""))
+
+            # --- Hackathon Demo Heuristic: Cap unrealistic delay jumps ---
+            current_delay = int(features.get("current_delay", 0))
+            is_unstarted = False
+            if live_train:
+                curr = live_train.get("current_station")
+                src = live_train.get("source")
+                speed = live_train.get("speed", 0)
+                if curr and src and curr == src and speed == 0:
+                    is_unstarted = True
+
+            if is_unstarted:
+                # If it hasn't started, cap the forecast delay to a max of 15 mins
+                predicted_delay = min(predicted_delay, 15)
+            else:
+                # If it's running, cap the jump to no more than 45 mins above current delay
+                predicted_delay = min(predicted_delay, current_delay + 45)
+            
+            result["predicted_delay"] = predicted_delay
+            if calculate_eta_timestamp is not None:
+                predicted_eta_str = calculate_eta_timestamp(sanitized, predicted_delay)
+                result["predicted_eta"] = predicted_eta_str
+            else:
+                predicted_eta_str = str(result.get("predicted_eta", ""))
 
             # Enrich response with decision support extensions for frontend
             stations = live_train.get("stations", []) if live_train else []

@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { Search, AlertCircle } from "lucide-react";
+import { useSearchParams, Link } from "react-router-dom";
+import {
+  Search,
+  AlertCircle,
+  Train as TrainIcon,
+  SlidersHorizontal,
+  Cpu,
+} from "lucide-react";
 import PredictionCard from "../components/train/PredictionCard";
 import WeatherCard from "../components/train/WeatherCard";
 import ConfidenceMeter from "../components/train/ConfidenceMeter";
@@ -7,22 +14,24 @@ import ReasoningTimeline from "../components/train/ReasoningTimeline";
 import CabTelemetryHUD from "../components/train/CabTelemetryHUD";
 import ShapWaterfallChart from "../components/train/ShapWaterfallChart";
 import EmptyState from "../components/common/EmptyState";
-import { predictETA, getWeather } from "../services/api";
+import { predictETA, getWeather, getTrainDetails } from "../services/api";
 import type { Prediction, WeatherData } from "../types";
-
 import { getStationCoord } from "../lib/geo";
 
 const suggestedTrains = [
-  { number: "12301", name: "Howrah Rajdhani", loco: "Electric" },
+  { number: "12301", name: "Howrah Rajdhani", loco: "Electric WAP-7" },
   { number: "22959", name: "Jamnagar Intercity", loco: "Superfast" },
-  { number: "12002", name: "Bhopal Shatabdi", loco: "Shatabdi" },
-  { number: "12050", name: "Gatiman Express", loco: "Superfast" },
+  { number: "12002", name: "Bhopal Shatabdi", loco: "Shatabdi Exp" },
+  { number: "12050", name: "Gatiman Express", loco: "Semi-High Speed" },
   { number: "22926", name: "Okha Vande Bharat", loco: "Vande Bharat" },
   { number: "12202", name: "Garib Rath Express", loco: "Garib Rath" },
 ];
 
 export default function TrainSearch() {
-  const [trainNumber, setTrainNumber] = useState("12301");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTrain = searchParams.get("train") || "12301";
+
+  const [trainNumber, setTrainNumber] = useState(initialTrain);
   const [prediction, setPrediction] = useState<Prediction | null>(null);
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,10 +44,13 @@ export default function TrainSearch() {
     setIsLoading(true);
     setError(null);
 
+    // Update URL query param quietly
+    setSearchParams({ train: query });
+
     try {
       const predData = await predictETA(query);
       if (!predData) {
-        setError(`No active data found for Train #${query}. Verify the train number.`);
+        setError(`No active operational telemetry found for Train #${query}. Verify train number or test one of the verified express corridors.`);
         setPrediction(null);
         setWeather(null);
         return;
@@ -46,18 +58,22 @@ export default function TrainSearch() {
       setPrediction(predData);
 
       // Fetch dynamic telemetry for weather coordinates
-      import("../services/api").then(async ({ getTrainDetails }) => {
+      try {
         const trainData = await getTrainDetails(query);
         let stationCode = predData.currentStationCode || predData.currentStation;
         if (trainData) {
           stationCode = trainData.currentStationCode || trainData.currentStation || stationCode;
-          setPrediction(prev => prev ? {
-            ...prev,
-            currentStation: trainData.currentStation || prev.currentStation,
-            currentStationCode: trainData.currentStationCode || prev.currentStationCode,
-            nextStation: trainData.nextStation || prev.nextStation,
-            nextStationCode: trainData.nextStationCode || prev.nextStationCode,
-          } : prev);
+          setPrediction((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  currentStation: trainData.currentStation || prev.currentStation,
+                  currentStationCode: trainData.currentStationCode || prev.currentStationCode,
+                  nextStation: trainData.nextStation || prev.nextStation,
+                  nextStationCode: trainData.nextStationCode || prev.nextStationCode,
+                }
+              : prev
+          );
         }
 
         let lat = trainData?.latitude;
@@ -77,23 +93,37 @@ export default function TrainSearch() {
         } else {
           setWeather(null);
         }
-      });
+      } catch (err) {
+        console.warn("Weather fetch secondary failure:", err);
+      }
     } catch {
-      setError("Failed to fetch prediction. Please try again.");
+      setError("Inference engine query failed. Please verify network connectivity.");
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    handleSearch("12301");
+    handleSearch(initialTrain);
   }, []);
 
   return (
-    <div className="space-y-5">
-      {/* Search Header */}
-      <div className="nr-card p-4">
-        <div className="max-w-2xl space-y-3">
+    <div className="space-y-4">
+      {/* ── Operational Command Bar ──────────────────────────── */}
+      <div className="nr-card p-4 bg-[var(--nr-surface-glass)] backdrop-blur border border-[var(--nr-border)]">
+        <div className="max-w-3xl space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrainIcon className="w-4 h-4 text-[var(--nr-accent)]" />
+              <h2 className="text-[13px] font-semibold text-[var(--nr-text)]">
+                Locomotive & Corridor ETA Inference Engine
+              </h2>
+            </div>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[var(--nr-surface-raised)] text-[var(--nr-text-muted)] border border-[var(--nr-border)]">
+              LightGBM + Physics Model
+            </span>
+          </div>
+
           {/* Search Bar */}
           <form
             onSubmit={(e) => {
@@ -108,31 +138,34 @@ export default function TrainSearch() {
                 type="text"
                 value={trainNumber}
                 onChange={(e) => setTrainNumber(e.target.value)}
-                placeholder="Enter train number (e.g. 12301)"
-                className="w-full bg-[var(--nr-bg)] border border-[var(--nr-border)] rounded-md pl-9 pr-3 py-2 text-[13px] text-[var(--nr-text)] placeholder:text-[var(--nr-text-faint)] outline-none focus:border-[var(--nr-accent)] transition-colors font-mono"
+                placeholder="Enter 5-digit train number (e.g. 12301, 12002, 22959)"
+                className="w-full bg-[var(--nr-bg-subtle)] border border-[var(--nr-border)] rounded-md pl-9 pr-3 py-2 text-[13px] text-[var(--nr-text)] placeholder:text-[var(--nr-text-faint)] outline-none focus:border-[var(--nr-accent)] transition-colors font-mono"
               />
             </div>
 
             <button
               type="submit"
               disabled={isLoading || !trainNumber.trim()}
-              className="px-4 py-2 rounded-md bg-[var(--nr-accent)] hover:bg-[var(--nr-accent-hover)] disabled:opacity-50 text-white text-[13px] font-medium transition-colors flex items-center justify-center gap-1.5 shrink-0"
+              className="px-5 py-2 rounded-md bg-[var(--nr-accent)] hover:bg-[var(--nr-accent-hover)] disabled:opacity-50 text-white text-[12px] font-semibold transition-all shadow-sm flex items-center justify-center gap-2 shrink-0 cursor-pointer"
             >
               {isLoading ? (
                 <>
                   <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Predicting...</span>
+                  <span>Computing Inference...</span>
                 </>
               ) : (
-                <span>Predict ETA</span>
+                <>
+                  <Cpu className="w-3.5 h-3.5" />
+                  <span>Generate ETA</span>
+                </>
               )}
             </button>
           </form>
 
-          {/* Suggestions */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[11px] text-[var(--nr-text-muted)] mr-0.5">
-              Quick:
+          {/* Suggested Verified Corridors */}
+          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+            <span className="text-[11px] text-[var(--nr-text-muted)] mr-1 font-medium">
+              Verified Corridors:
             </span>
             {suggestedTrains.map((item) => (
               <button
@@ -142,13 +175,16 @@ export default function TrainSearch() {
                   setTrainNumber(item.number);
                   handleSearch(item.number);
                 }}
-                className={`text-[11px] px-2 py-0.5 rounded border font-mono transition-colors ${
+                className={`text-[11px] px-2.5 py-1 rounded border font-mono transition-all flex items-center gap-1.5 cursor-pointer ${
                   trainNumber === item.number
-                    ? "bg-[var(--nr-accent-muted)] text-[var(--nr-accent)] border-[var(--nr-accent)]/30"
-                    : "bg-[var(--nr-surface-raised)] text-[var(--nr-text-muted)] border-[var(--nr-border)] hover:text-[var(--nr-text)] hover:border-[var(--nr-border-strong)]"
+                    ? "bg-[var(--nr-surface-raised)] text-[var(--nr-accent)] border-[var(--nr-accent)]/40 shadow-sm font-bold"
+                    : "bg-[var(--nr-surface)] text-[var(--nr-text-muted)] border-[var(--nr-border)] hover:text-[var(--nr-text)] hover:border-[var(--nr-border-strong)]"
                 }`}
               >
-                {item.number}
+                <span>#{item.number}</span>
+                <span className="text-[9px] text-[var(--nr-text-muted)] font-sans">
+                  {item.name}
+                </span>
               </button>
             ))}
           </div>
@@ -156,15 +192,16 @@ export default function TrainSearch() {
       </div>
 
       {error && (
-        <div className="p-3 rounded-md bg-[var(--nr-danger-muted)] border border-[var(--nr-danger)]/20 flex items-center gap-2 text-[var(--nr-danger)] text-[13px]">
+        <div className="p-3.5 rounded-md bg-[var(--nr-danger-muted)] border border-[var(--nr-danger)]/30 flex items-center gap-2.5 text-[var(--nr-danger)] text-[12px]">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
-      {/* Results */}
+      {/* ── Results Presentation ─────────────────────────────── */}
       {!isLoading && prediction && (
         <div className="space-y-4">
+          {/* Cab Telemetry HUD */}
           <CabTelemetryHUD
             speed={prediction.locoTelemetry.speed}
             maxSpeed={prediction.locoTelemetry.maxSpeed}
@@ -174,15 +211,34 @@ export default function TrainSearch() {
           />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Main Column */}
             <div className="lg:col-span-2 space-y-4">
               <PredictionCard prediction={prediction} />
               <ShapWaterfallChart shapData={prediction.shapBreakdown} />
               <ReasoningTimeline steps={prediction.reasoning} />
             </div>
 
+            {/* Side Column */}
             <div className="space-y-4">
               <ConfidenceMeter score={prediction.confidenceScore} />
               {weather && <WeatherCard weather={weather} />}
+
+              {/* What-If Simulation Jump Link */}
+              <div className="nr-card p-4 space-y-2 border border-[var(--nr-border)]">
+                <div className="flex items-center gap-2 text-[var(--nr-text)] text-[12px] font-semibold">
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-[var(--nr-accent)]" />
+                  <span>Stress Test Corridor</span>
+                </div>
+                <p className="text-[11px] text-[var(--nr-text-muted)] leading-relaxed">
+                  Test disruption scenarios (weather storms, track maintenance blocks, or late incoming rakes) for #{prediction.trainNumber}.
+                </p>
+                <Link
+                  to={`/simulate?train=${prediction.trainNumber}`}
+                  className="w-full mt-2 inline-flex items-center justify-center gap-1.5 py-1.5 px-3 rounded bg-[var(--nr-surface-raised)] hover:bg-[var(--nr-border)] text-[var(--nr-accent)] text-[11px] font-semibold border border-[var(--nr-border)] transition-colors"
+                >
+                  Launch What-If Simulator &rarr;
+                </Link>
+              </div>
             </div>
           </div>
         </div>
